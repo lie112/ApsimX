@@ -72,9 +72,9 @@ namespace Models.CLEM.Resources
         }
 
         /// <summary>
-        /// Constructor
-        /// </summary>
-        public RuminantMale(RuminantType setParams, double setAge, double setWeight)
+        /// Constructor based on RuminantParameters for parameters
+        /// /// </summary>
+        public RuminantMale(RuminantParameters setParams, double setAge, double setWeight)
             : base(setParams, setAge, setWeight)
         {
         }

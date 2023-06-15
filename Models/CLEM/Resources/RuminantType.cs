@@ -24,7 +24,7 @@ namespace Models.CLEM.Resources
     [Version(1, 0, 2, "All conception parameters moved to associated conception components")]
     [Version(1, 0, 1, "")]
     [HelpUri(@"Content/Features/Resources/Ruminants/RuminantType.htm")]
-    public class RuminantType : CLEMResourceTypeBase, IValidatableObject, IResourceType
+    public class RuminantType : CLEMResourceTypeBase, IValidatableObject, IResourceType, IRuminantParametersGrowth, IRuminantParametersBreeding, IRuminantParametersLactation, IRuminantParametersGeneral
     {
         private RuminantHerd parentHerd = null;
         private List<AnimalPriceGroup> priceGroups = new List<AnimalPriceGroup>();
@@ -397,6 +397,11 @@ namespace Models.CLEM.Resources
             LastConceptionStatus = e;
             ConceptionStatusChanged?.Invoke(this, e);
         }
+
+        /// <summary>
+        /// Advanced conception parameters if present
+        /// </summary>
+        public IConceptionModel ConceptionModel { get; set; }
 
         #region Grow Activity
 
@@ -911,7 +916,6 @@ namespace Models.CLEM.Resources
         [Description("Proportion of SRW required before conception possible (min size for mating)")]
         [Required, Proportion]
         public double CriticalCowWeight { get; set; }
-
         /// <summary>
         /// Maximum number of matings per male per day
         /// </summary>

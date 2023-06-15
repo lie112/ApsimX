@@ -370,11 +370,12 @@ namespace Models.CLEM.Resources
         /// <summary>
         /// Constructor
         /// </summary>
-        public RuminantFemale(RuminantType setParams, double setAge, double setWeight)
+        public RuminantFemale(RuminantParameters setParams, double setAge, double setWeight)
             : base(setParams, setAge, setWeight)
         {
             SucklingOffspringList = new List<Ruminant>();
         }
+
     }
 
     /// <summary>
