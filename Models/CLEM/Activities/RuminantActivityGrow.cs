@@ -243,7 +243,7 @@ namespace Models.CLEM.Activities
             // determine milk production curve to use
             // if milking is taking place use the non-suckling curve for duration of lactation
             // otherwise use the suckling curve where there is a larger drop off in milk production
-            if (ind.SucklingOffspringList.Count() == 0)
+            if (ind.SucklingOffspringList.Count == 0)
                 milkCurve = ind.BreedParams.MilkCurveNonSuckling;
             else // no milking
                 milkCurve = ind.BreedParams.MilkCurveSuckling;
