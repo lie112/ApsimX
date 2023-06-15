@@ -4,6 +4,7 @@ using Models.CLEM.Reporting;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 
 namespace Models.CLEM.Resources
 {
@@ -53,10 +54,16 @@ namespace Models.CLEM.Resources
         /// <inheritdoc/>
         public IndividualAttributeList Attributes { get; set; } = new IndividualAttributeList();
 
+        ///// <summary>
+        ///// Reference to the Breed Parameters.
+        ///// </summary>
+        //public RuminantType BreedParams;
+
         /// <summary>
-        /// Reference to the Breed Parameters.
+        /// Stores all ruminant parameters for the individual
+        /// Will manage duplication when a parameter needs to change for this individual
         /// </summary>
-        public RuminantType BreedParams;
+        public RuminantParameters Parameters { get; set; }
 
         /// <summary>
         /// Breed of individual
@@ -758,36 +765,50 @@ namespace Models.CLEM.Resources
         /// <summary>
         /// Constructor
         /// </summary>
-        public Ruminant(RuminantType setParams, double setAge, double setWeight)
+        /// <param name="parameters">A new parameters provided for this individual. This is passed onto the individual so must be a new copy of the parent paramters</param>
+        /// <param name="setAge">Define the age of the individual at creation</param>
+        /// <param name="setWeight">Define the weight of the individual</param>
+        public Ruminant(RuminantParameters parameters, double setAge, double setWeight)
         {
-            this.BreedParams = setParams;
-            this.Age = setAge;
-            this.AgeEnteredSimulation = setAge;
+            Parameters = parameters;
+            Age = setAge;
+            AgeEnteredSimulation = setAge;
 
             Weight = setWeight <= 0 ? NormalisedAnimalWeight : setWeight;
 
-            this.PreviousWeight = this.Weight;
-            this.Number = 1;
-            this.Wool = 0;
-            this.Cashmere = 0;
+            PreviousWeight = this.Weight;
+            Number = 1;
+            Wool = 0;
+            Cashmere = 0;
             int ageInt = Convert.ToInt32(Math.Round(Age, 4));
-            int weanage = Convert.ToInt32(Math.Round((BreedParams.NaturalWeaningAge == 0) ? BreedParams.GestationLength : BreedParams.NaturalWeaningAge, 4));//   Convert.ToInt32(Math.Round(BreedParams.GestationLength, 4));
-            //this.weaned = (ageInt <= weanage)?ageInt:weanage;
-            this.weaned = (ageInt < weanage) ? 0 : weanage;
-            this.SaleFlag = HerdChangeReason.None;
-            this.Attributes = new IndividualAttributeList();
+            int weanage = Convert.ToInt32(Math.Round((Parameters.General.NaturalWeaningAge == 0) ? Parameters.Breeding.GestationLength : Parameters.General.NaturalWeaningAge, 4));
+            weaned = (ageInt < weanage) ? 0 : weanage;
+            SaleFlag = HerdChangeReason.None;
+            Attributes = new IndividualAttributeList();
         }
 
         /// <summary>
-        /// Factory for creating ruminants based on provided values
+        /// Factory for creating ruminants based on provided values in a RuminantParameters object
+        /// </summary>
+        public static Ruminant Create(Sex sex, RuminantParameters parameters, double age = 0, double weight = 0)
+        {
+            if (sex == Sex.Male)
+                return new RuminantMale(new RuminantParameters(parameters), age, weight);
+            else
+                return new RuminantFemale(new RuminantParameters(parameters), age, weight);
+        }
+
+        /// <summary>
+        /// Factory for creating ruminants where a RuminantType is provided as the source of parameters
         /// </summary>
         public static Ruminant Create(Sex sex, RuminantType parameters, double age = 0, double weight = 0)
         {
             if (sex == Sex.Male)
-                return new RuminantMale(parameters, age, weight);
+                return new RuminantMale(new RuminantParameters(parameters), age, weight);
             else
-                return new RuminantFemale(parameters, age, weight);
+                return new RuminantFemale(new RuminantParameters(parameters), age, weight);
         }
+
 
         /// <summary>
         /// Adds an attribute to an individual with ability to modify properties associated with the genotype
@@ -799,20 +820,15 @@ namespace Models.CLEM.Resources
             IIndividualAttribute indAttribute = attribute.Value.GetInheritedAttribute() as IIndividualAttribute;
 
             // is this a property attribute that may modify the individuals parameter set?
-            if(indAttribute.SetAttributeSettings is SetAttributeWithProperty)
+            if(indAttribute.SetAttributeSettings is SetAttributeWithProperty attributeSettings)
             {
                 // has the value changed from that in the breed params provided to the individual?
-                if (indAttribute.StoredValue != (attribute.Value.SetAttributeSettings as SetAttributeWithProperty).RuminantPropertyInfo.GetValue(this))
+                object propertyValue = attributeSettings.RuminantPropertyInfo.GetValue(this);
+                if (indAttribute.StoredValue != propertyValue)
                 {
-                    // is this still the shared breed params with the mother
-                    if(BreedParams != Mother.BreedParams)
-                    {
-                        // create deep copy of BreedParams
-
-
-                    }
+                    Parameters.Update(attribute.Key, attributeSettings.RuminantPropertyInfo, propertyValue);
                     // update breedparams property to the new value
-                    (attribute.Value.SetAttributeSettings as SetAttributeWithProperty).RuminantPropertyInfo.SetValue(this, indAttribute.StoredValue);
+                    //attributeSettings.RuminantPropertyInfo.SetValue(this, indAttribute.StoredValue);
                 }
             }
             Attributes.Add(attribute.Key, indAttribute);

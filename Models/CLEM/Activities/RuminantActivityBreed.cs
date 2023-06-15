@@ -331,7 +331,7 @@ namespace Models.CLEM.Activities
                         Sex sex = isMale ? Sex.Male : Sex.Female;
                         double weight = female.BreedParams.SRWBirth * female.StandardReferenceWeight * (1 - 0.33 * (1 - female.Weight / female.StandardReferenceWeight));
 
-                        Ruminant newSucklingRuminant = Ruminant.Create(sex, female.BreedParams, 0, weight);
+                        Ruminant newSucklingRuminant = Ruminant.Create(sex, female.Parameters, 0, weight);
                         newSucklingRuminant.HerdName = female.HerdName;
                         newSucklingRuminant.Breed = female.BreedParams.Breed;
                         newSucklingRuminant.ID = HerdResource.NextUniqueID;

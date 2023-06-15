@@ -132,7 +132,7 @@ namespace Models.CLEM.Resources
         /// <returns>List of ruminants</returns>
         public List<Ruminant> CreateIndividuals(int number, List<ISetAttribute> initialAttributes, RuminantType ruminantType = null, bool getUniqueID = true)
         {
-            List<Ruminant> individuals = new List<Ruminant>();
+            List<Ruminant> individuals = new();
             if (initialAttributes is null)
                 initialAttributes = new List<ISetAttribute>();
 
@@ -143,7 +143,7 @@ namespace Models.CLEM.Resources
                     parent = FindAncestor<RuminantType>();
 
                 // get Ruminant Herd resource for unique ids
-                RuminantHerd ruminantHerd = parent.Parent as RuminantHerd; // Resources.FindResourceGroup<RuminantHerd>();
+                RuminantHerd ruminantHerd = parent.Parent as RuminantHerd; 
 
                 for (int i = 1; i <= number; i++)
                 {
@@ -267,7 +267,7 @@ namespace Models.CLEM.Resources
 
                     if (rumType != null)
                     {
-                        newInd = Ruminant.Create(Sex, rumType, Age);
+                        newInd = Ruminant.Create(Sex, new RuminantParameters(rumType), Age);
                         normWtString = newInd.NormalisedAnimalWeight.ToString("#,##0");
                     }
 
@@ -366,7 +366,7 @@ namespace Models.CLEM.Resources
                         RuminantType rumtype = FindAncestor<RuminantType>();
                         if (rumtype != null)
                         {
-                            var newInd = Ruminant.Create(Sex, rumtype, Age);
+                            var newInd = Ruminant.Create(Sex, new RuminantParameters(rumtype), Age);
 
                             string normWtString = newInd.NormalisedAnimalWeight.ToString("#,##0");
                             if (this.Weight != 0 && Math.Abs(this.Weight - newInd.NormalisedAnimalWeight) / newInd.NormalisedAnimalWeight > 0.2)
