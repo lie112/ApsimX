@@ -2,7 +2,10 @@
 
 namespace Models.CLEM.Resources
 {
-    internal class RuminantParametersLactation : IRuminantParametersLactation
+    /// <summary>
+    /// Container for all ruminant lactation parameters
+    /// </summary>
+    public class RuminantParametersLactation : IRuminantParametersLactation
     {
         /// <summary>
         /// Constructor to create a deep copy of model of type IRuminantParametersLactation to a new RuminantParametersLactation

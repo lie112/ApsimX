@@ -46,14 +46,14 @@ namespace Models.CLEM.Resources
         public void SetConceptionDetails(RuminantFemale female)
         {
             // if female can breed
-            if (NumberMonthsPregnant < female.BreedParams.GestationLength && female.Age - NumberMonthsPregnant >= female.BreedParams.MinimumAge1stMating)
+            if (NumberMonthsPregnant < female.Parameters.Breeding.GestationLength && female.Age - NumberMonthsPregnant >= female.Parameters.Breeding.MinimumAge1stMating)
             {
                 int offspring = female.CalulateNumberOfOffspringThisPregnancy();
                 if (offspring > 0)
                 {
                     female.UpdateConceptionDetails(offspring, 1, -1 * NumberMonthsPregnant);
                     // report conception status changed
-                    female.BreedParams.OnConceptionStatusChanged(new Reporting.ConceptionStatusChangedEventArgs(Reporting.ConceptionStatus.Conceived, female, clock.Today.AddMonths(-1 * NumberMonthsPregnant)));
+                    female.Parameters.BreedDetails.OnConceptionStatusChanged(new Reporting.ConceptionStatusChangedEventArgs(Reporting.ConceptionStatus.Conceived, female, clock.Today.AddMonths(-1 * NumberMonthsPregnant)));
                 }
             }
         }

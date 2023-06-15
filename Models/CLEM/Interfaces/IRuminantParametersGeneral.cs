@@ -81,5 +81,10 @@
         /// Juvenile mortality rate maximum
         /// </summary>
         double JuvenileMortalityMaximum { get; set; }
+        /// <summary>
+        /// Proportion of max body weight needed for survival
+        /// </summary>
+        double ProportionOfMaxWeightToSurvive { get; set; }
+
     }
 }

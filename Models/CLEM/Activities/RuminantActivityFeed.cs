@@ -362,7 +362,7 @@ namespace Models.CLEM.Activities
                         {
                             case RuminantFeedActivityTypes.SpecifiedDailyAmount:
                             case RuminantFeedActivityTypes.ProportionOfFeedAvailable:
-                                details.Amount = ((ind.PotentialIntake * (usingPotentialIntakeMultiplier ? ind.BreedParams.OverfeedPotentialIntakeModifier : 1)) - ind.Intake);
+                                details.Amount = ((ind.PotentialIntake * (usingPotentialIntakeMultiplier ? ind.Parameters.Growth.OverfeedPotentialIntakeModifier : 1)) - ind.Intake);
                                 details.Amount *= feedLimit;
                                 details.Amount *= ind.Weight/totalWeight;
                                 break;
@@ -387,8 +387,8 @@ namespace Models.CLEM.Activities
                         }
                         // check amount meets intake limits
                         if (usingPotentialIntakeMultiplier)
-                            if (MathUtilities.IsGreaterThan(details.Amount, (ind.PotentialIntake + (Math.Max(0, ind.BreedParams.OverfeedPotentialIntakeModifier - 1) * overfeedProportion * ind.PotentialIntake)) - ind.Intake))
-                                details.Amount = (ind.PotentialIntake + (Math.Max(0, ind.BreedParams.OverfeedPotentialIntakeModifier - 1) * overfeedProportion * ind.PotentialIntake)) - ind.Intake;
+                            if (MathUtilities.IsGreaterThan(details.Amount, (ind.PotentialIntake + (Math.Max(0, ind.Parameters.Growth.OverfeedPotentialIntakeModifier - 1) * overfeedProportion * ind.PotentialIntake)) - ind.Intake))
+                                details.Amount = (ind.PotentialIntake + (Math.Max(0, ind.Parameters.Growth.OverfeedPotentialIntakeModifier - 1) * overfeedProportion * ind.PotentialIntake)) - ind.Intake;
                         ind.AddIntake(details);
                     }
                 }

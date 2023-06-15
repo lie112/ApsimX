@@ -99,7 +99,7 @@ namespace Models.CLEM.Resources
                     foreach (var sucklingList in sucklingGroups)
                     {
                         // get list of females of breeding age and condition
-                        List<RuminantFemale> breedFemales = herd.OfType<RuminantFemale>().Where(a => a.Age >= a.BreedParams.MinimumAge1stMating + a.BreedParams.GestationLength + sucklingList.Key && a.HighWeight >= (a.BreedParams.MinimumSize1stMating * a.StandardReferenceWeight) && a.Weight >= (a.BreedParams.CriticalCowWeight * a.StandardReferenceWeight)).OrderByDescending(a => a.Age).ToList();
+                        List<RuminantFemale> breedFemales = herd.OfType<RuminantFemale>().Where(a => a.Age >= a.Parameters.Breeding.MinimumAge1stMating + a.Parameters.Breeding.GestationLength + sucklingList.Key && a.HighWeight >= (a.Parameters.Breeding.MinimumSize1stMating * a.StandardReferenceWeight) && a.Weight >= (a.Parameters.BreedDetails.CriticalCowWeight * a.StandardReferenceWeight)).OrderByDescending(a => a.Age).ToList();
 
                         if (breedFemales.Count == 0)
                         {
@@ -127,20 +127,20 @@ namespace Models.CLEM.Resources
                                         double milkTime = (suckling.Age * 30.4) + 15; // +15 equivalent to mid month production
 
                                         // need to calculate normalised animal weight here for milk production
-                                        double milkProduction = breedFemales[0].BreedParams.MilkPeakYield * breedFemales[0].Weight / breedFemales[0].NormalisedAnimalWeight * (Math.Pow(((milkTime + breedFemales[0].BreedParams.MilkOffsetDay) / breedFemales[0].BreedParams.MilkPeakDay), breedFemales[0].BreedParams.MilkCurveSuckling)) * Math.Exp(breedFemales[0].BreedParams.MilkCurveSuckling * (1 - (milkTime + breedFemales[0].BreedParams.MilkOffsetDay) / breedFemales[0].BreedParams.MilkPeakDay));
+                                        double milkProduction = breedFemales[0].Parameters.Lactation.MilkPeakYield * breedFemales[0].Weight / breedFemales[0].NormalisedAnimalWeight * (Math.Pow(((milkTime + breedFemales[0].Parameters.Lactation.MilkOffsetDay) / breedFemales[0].Parameters.Lactation.MilkPeakDay), breedFemales[0].Parameters.Lactation.MilkCurveSuckling)) * Math.Exp(breedFemales[0].Parameters.Lactation.MilkCurveSuckling * (1 - (milkTime + breedFemales[0].Parameters.Lactation.MilkOffsetDay) / breedFemales[0].Parameters.Lactation.MilkPeakDay));
                                         breedFemales[0].MilkProduction = Math.Max(milkProduction, 0.0);
                                         breedFemales[0].MilkCurrentlyAvailable = milkProduction * 30.4;
 
                                         // generalised curve
                                         // previously * 30.64
-                                        double currentIPI = Math.Pow(breedFemales[0].BreedParams.InterParturitionIntervalIntercept * (breedFemales[0].Weight / breedFemales[0].StandardReferenceWeight), breedFemales[0].BreedParams.InterParturitionIntervalCoefficient);
+                                        double currentIPI = Math.Pow(breedFemales[0].Parameters.Breeding.InterParturitionIntervalIntercept * (breedFemales[0].Weight / breedFemales[0].StandardReferenceWeight), breedFemales[0].Parameters.Breeding.InterParturitionIntervalCoefficient);
                                         // restrict minimum period between births
-                                        currentIPI = Math.Max(currentIPI, breedFemales[0].BreedParams.GestationLength + 2);
+                                        currentIPI = Math.Max(currentIPI, breedFemales[0].Parameters.Breeding.GestationLength + 2);
 
                                         //breedFemales[0].Parity = breedFemales[0].Age - suckling.Age - 9;
                                         // AL removed the -9 as this would make it conception month not birth month
                                         breedFemales[0].AgeAtLastBirth = breedFemales[0].Age - suckling.Age;
-                                        breedFemales[0].AgeAtLastConception = breedFemales[0].AgeAtLastBirth - breedFemales[0].BreedParams.GestationLength;
+                                        breedFemales[0].AgeAtLastConception = breedFemales[0].AgeAtLastBirth - breedFemales[0].Parameters.Breeding.GestationLength;
                                         breedFemales[0].SetAgeEnteredSimulation(breedFemales[0].AgeAtLastConception);
                                     }
 
@@ -178,27 +178,27 @@ namespace Models.CLEM.Resources
                     }
 
                     // gestation interval at smallest size generalised curve
-                    double minAnimalWeight = herd[0].StandardReferenceWeight - ((1 - herd[0].BreedParams.SRWBirth) * herd[0].StandardReferenceWeight) * Math.Exp(-(herd[0].BreedParams.AgeGrowthRateCoefficient * (herd[0].BreedParams.MinimumAge1stMating * 30.4)) / (Math.Pow(herd[0].StandardReferenceWeight, herd[0].BreedParams.SRWGrowthScalar)));
-                    double minsizeIPI = Math.Pow(herd[0].BreedParams.InterParturitionIntervalIntercept * (minAnimalWeight / herd[0].StandardReferenceWeight), herd[0].BreedParams.InterParturitionIntervalCoefficient);
+                    double minAnimalWeight = herd[0].StandardReferenceWeight - ((1 - herd[0].Parameters.General.SRWBirth) * herd[0].StandardReferenceWeight) * Math.Exp(-(herd[0].Parameters.General.AgeGrowthRateCoefficient * (herd[0].Parameters.Breeding.MinimumAge1stMating * 30.4)) / (Math.Pow(herd[0].StandardReferenceWeight, herd[0].Parameters.General.SRWGrowthScalar)));
+                    double minsizeIPI = Math.Pow(herd[0].Parameters.Breeding.InterParturitionIntervalIntercept * (minAnimalWeight / herd[0].StandardReferenceWeight), herd[0].Parameters.Breeding.InterParturitionIntervalCoefficient);
                     // restrict minimum period between births
-                    minsizeIPI = Math.Max(minsizeIPI, herd[0].BreedParams.GestationLength + 2);
+                    minsizeIPI = Math.Max(minsizeIPI, herd[0].Parameters.Breeding.GestationLength + 2);
 
                     // assigning values for the remaining females who haven't just bred.
                     // i.e met breeding rules and not pregnant or lactating (just assigned suckling), but calculate for underweight individuals not previously provided sucklings.
-                    double ageFirstBirth = herd[0].BreedParams.MinimumAge1stMating + herd[0].BreedParams.GestationLength;
-                    foreach (RuminantFemale female in herd.OfType<RuminantFemale>().Where(a => !a.IsLactating && !a.IsPregnant && (a.Age >= a.BreedParams.MinimumAge1stMating + a.BreedParams.GestationLength & a.HighWeight >= a.BreedParams.MinimumSize1stMating * a.StandardReferenceWeight)))
+                    double ageFirstBirth = herd[0].Parameters.Breeding.MinimumAge1stMating + herd[0].Parameters.Breeding.GestationLength;
+                    foreach (RuminantFemale female in herd.OfType<RuminantFemale>().Where(a => !a.IsLactating && !a.IsPregnant && (a.Age >= a.Parameters.Breeding.MinimumAge1stMating + a.Parameters.Breeding.GestationLength & a.HighWeight >= a.Parameters.Breeding.MinimumSize1stMating * a.StandardReferenceWeight)))
                     {
                         // generalised curve
-                        double currentIPI = Math.Pow(herd[0].BreedParams.InterParturitionIntervalIntercept * (female.Weight / female.StandardReferenceWeight), herd[0].BreedParams.InterParturitionIntervalCoefficient);
+                        double currentIPI = Math.Pow(herd[0].Parameters.Breeding.InterParturitionIntervalIntercept * (female.Weight / female.StandardReferenceWeight), herd[0].Parameters.Breeding.InterParturitionIntervalCoefficient);
                         // restrict minimum period between births (previously +61)
-                        currentIPI = Math.Max(currentIPI, female.BreedParams.GestationLength + 2);
+                        currentIPI = Math.Max(currentIPI, female.Parameters.Breeding.GestationLength + 2);
 
                         // calculate number of births assuming conception at min age first mating
                         // therefore first birth min age + gestation length
 
                         int numberOfBirths = Convert.ToInt32((female.Age - ageFirstBirth) / ((currentIPI + minsizeIPI) / 2), CultureInfo.InvariantCulture) - 1;
                         female.AgeAtLastBirth = ageFirstBirth + (currentIPI * numberOfBirths);
-                        female.AgeAtLastConception = female.AgeAtLastBirth - female.BreedParams.GestationLength;
+                        female.AgeAtLastConception = female.AgeAtLastBirth - female.Parameters.Breeding.GestationLength;
                     }
                 }
             }
@@ -219,7 +219,7 @@ namespace Models.CLEM.Resources
                 Category = "breeding stats"
             };
 
-            foreach (RuminantFemale female in Herd.Where(a => a.Sex == Sex.Female && a.Age >= a.BreedParams.MinimumAge1stMating))
+            foreach (RuminantFemale female in Herd.Where(a => a.Sex == Sex.Female && a.Age >= a.Parameters.Breeding.MinimumAge1stMating))
             {
                 args.RumObj = female;
                 OnFinalFemaleOccurred(args);
@@ -240,14 +240,14 @@ namespace Models.CLEM.Resources
             LastIndividualChanged = ind;
 
             // check mandatory attributes
-            ind.BreedParams.CheckMandatoryAttributes(ind, model);
+            ind.Parameters.BreedDetails.CheckMandatoryAttributes(ind, model);
 
             LastTransaction.TransactionType = TransactionType.Gain;
             LastTransaction.Amount = 1;
             LastTransaction.Activity = model as CLEMModel;
             LastTransaction.RelatesToResource = null;
             LastTransaction.Category = ind.SaleFlag.ToString();
-            LastTransaction.ResourceType = ind.BreedParams;
+            LastTransaction.ResourceType = ind.Parameters.BreedDetails;
             LastTransaction.ExtraInformation = ind;
 
             OnTransactionOccurred(null);
@@ -291,13 +291,13 @@ namespace Models.CLEM.Resources
             LastTransaction.Activity = model as CLEMModel;
             LastTransaction.RelatesToResource = null;
             LastTransaction.Category = ind.SaleFlag.ToString();
-            LastTransaction.ResourceType = ind.BreedParams;
+            LastTransaction.ResourceType = ind.Parameters.BreedDetails;
             LastTransaction.ExtraInformation = ind;
 
             OnTransactionOccurred(null);
 
             // report female breeding stats if needed
-            if (ind.Sex == Sex.Female & ind.Age >= ind.BreedParams.MinimumAge1stMating)
+            if (ind.Sex == Sex.Female & ind.Age >= ind.Parameters.Breeding.MinimumAge1stMating)
             {
                 RuminantReportItemEventArgs args = new RuminantReportItemEventArgs
                 {
@@ -446,9 +446,9 @@ namespace Models.CLEM.Resources
         /// <returns>A grouped summary of individuals</returns>
         public IEnumerable<RuminantReportTypeDetails> SummarizeIndividualsByGroups(IEnumerable<Ruminant> individuals, PurchaseOrSalePricingStyleType priceStyle, string warningMessage = "")
         {
-            bool multi = individuals.Select(a => a.BreedParams.Name).Distinct().Count() > 1;
+            bool multi = individuals.Select(a => a.Parameters.BreedDetails.Name).Distinct().Count() > 1;
             var groupedInd = from ind in individuals
-                             group ind by ind.BreedParams.Name into breedGroup
+                             group ind by ind.Parameters.BreedDetails.Name into breedGroup
                              select new RuminantReportTypeDetails()
                              {
                                  RuminantTypeName = breedGroup.Key,
@@ -461,7 +461,7 @@ namespace Models.CLEM.Resources
                                                          Count = catind.Count(),
                                                          TotalAdultEquivalent = catind.Sum(a => a.AdultEquivalent),
                                                          TotalWeight = catind.Sum(a => a.Weight),
-                                                         TotalPrice = catind.Sum(a => a.BreedParams.GetPriceGroupOfIndividual(a, priceStyle, warningMessage)?.CalculateValue(a))
+                                                         TotalPrice = catind.Sum(a => a.Parameters.BreedDetails.GetPriceGroupOfIndividual(a, priceStyle, warningMessage)?.CalculateValue(a))
                                                      }
                              };
             return groupedInd;

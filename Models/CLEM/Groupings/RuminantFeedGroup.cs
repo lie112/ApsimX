@@ -181,7 +181,7 @@ namespace Models.CLEM.Groupings
                 Weight = weightNeeded ? a.Sum(b => b.Weight) : 0,
                 Intake = a.Sum(b => b.Intake),
                 PotentialIntake = a.Sum(b => b.PotentialIntake),
-                IntakeMultiplier = usingPotentialIntakeMultiplier ? a.FirstOrDefault().BreedParams.OverfeedPotentialIntakeModifier : 1
+                IntakeMultiplier = usingPotentialIntakeMultiplier ? a.FirstOrDefault().Parameters.Growth.OverfeedPotentialIntakeModifier : 1
             }).FirstOrDefault();
 
             if (selectedIndividuals != null)

@@ -95,17 +95,17 @@ namespace Models.CLEM.Activities
             // Natural weaning takes place here before animals eat or take milk from mother.
             foreach (var ind in herd.Where(a => a.Weaned == false))
             {
-                double weaningAge = ind.BreedParams.NaturalWeaningAge;
+                double weaningAge = ind.Parameters.General.NaturalWeaningAge;
                 if(MathUtilities.FloatsAreEqual(weaningAge, 0))
-                    weaningAge = ind.BreedParams.GestationLength;
+                    weaningAge = ind.Parameters.Breeding.GestationLength;
 
                 if (MathUtilities.IsGreaterThan(ind.Age, weaningAge))
                 {
                     ind.Wean(true, "Natural");
 
                     // report wean. If mother has died create temp female with the mother's ID for reporting only
-                    conceptionArgs.Update(ConceptionStatus.Weaned, ind.Mother ?? new RuminantFemale(ind.BreedParams, -1, 999) { ID = ind.MotherID }, clock.Today, ind);
-                    ind.BreedParams.OnConceptionStatusChanged(conceptionArgs);
+                    conceptionArgs.Update(ConceptionStatus.Weaned, ind.Mother ?? new RuminantFemale(ind.Parameters, -1, 999) { ID = ind.MotherID }, clock.Today, ind);
+                    ind.Parameters.BreedDetails.OnConceptionStatusChanged(conceptionArgs);
                 }
             }
         }
@@ -154,15 +154,15 @@ namespace Models.CLEM.Activities
             if (!ind.Weaned)
             {
                 // potential milk intake/animal/day
-                ind.MilkPotentialIntake = ind.BreedParams.MilkIntakeIntercept + ind.BreedParams.MilkIntakeCoefficient * ind.Weight;
+                ind.MilkPotentialIntake = ind.Parameters.Growth.MilkIntakeIntercept + ind.Parameters.Growth.MilkIntakeCoefficient * ind.Weight;
 
                 // get estimated milk available
                 // this will be updated to the corrected milk available in the calculate energy section.
                 ind.MilkIntake = Math.Min(ind.MilkPotentialIntake, ind.MothersMilkProductionAvailable);
 
                 // if milk supply low, suckling will subsitute forage up to a specified % of bodyweight (R_C60)
-                if (MathUtilities.IsLessThan(ind.MilkIntake, ind.Weight * ind.BreedParams.MilkLWTFodderSubstitutionProportion))
-                    potentialIntake = Math.Max(0.0, ind.Weight * ind.BreedParams.MaxJuvenileIntake - ind.MilkIntake * ind.BreedParams.ProportionalDiscountDueToMilk);
+                if (MathUtilities.IsLessThan(ind.MilkIntake, ind.Weight * ind.Parameters.Growth.MilkLWTFodderSubstitutionProportion))
+                    potentialIntake = Math.Max(0.0, ind.Weight * ind.Parameters.Growth.MaxJuvenileIntake - ind.MilkIntake * ind.Parameters.Growth.ProportionalDiscountDueToMilk);
 
                 ind.MilkIntake *= 30.4;
                 ind.MilkPotentialIntake *= 30.4;
@@ -173,12 +173,12 @@ namespace Models.CLEM.Activities
                 {
                     // Reference: SCA Metabolic LWTs
                     // restored in v112 of NABSA for weaner animals
-                    potentialIntake = ind.BreedParams.IntakeCoefficient * standardReferenceWeight * (Math.Pow(liveWeightForIntake, 0.75) / Math.Pow(standardReferenceWeight, 0.75)) * (ind.BreedParams.IntakeIntercept - (Math.Pow(liveWeightForIntake, 0.75) / Math.Pow(standardReferenceWeight, 0.75)));
+                    potentialIntake = ind.Parameters.Growth.IntakeCoefficient * standardReferenceWeight * (Math.Pow(liveWeightForIntake, 0.75) / Math.Pow(standardReferenceWeight, 0.75)) * (ind.Parameters.Growth.IntakeIntercept - (Math.Pow(liveWeightForIntake, 0.75) / Math.Pow(standardReferenceWeight, 0.75)));
                 }
                 else // 12month+ weaned individuals
                 {
                     // Reference: SCA based actual LWTs
-                    potentialIntake = ind.BreedParams.IntakeCoefficient * liveWeightForIntake * (ind.BreedParams.IntakeIntercept - liveWeightForIntake / standardReferenceWeight);
+                    potentialIntake = ind.Parameters.Growth.IntakeCoefficient * liveWeightForIntake * (ind.Parameters.Growth.IntakeIntercept - liveWeightForIntake / standardReferenceWeight);
                 }
 
                 if (ind.Sex == Sex.Female)
@@ -191,7 +191,7 @@ namespace Models.CLEM.Activities
                         double dayOfLactation = femaleind.DaysLactating;
                         // Reference: Intake multiplier for lactating cow (M.Freer)
                         // double intakeMilkMultiplier = 1 + 0.57 * Math.Pow((dayOfLactation / 81.0), 0.7) * Math.Exp(0.7 * (1 - (dayOfLactation / 81.0)));
-                        double intakeMilkMultiplier = 1 + ind.BreedParams.LactatingPotentialModifierConstantA * Math.Pow((dayOfLactation / ind.BreedParams.LactatingPotentialModifierConstantB), ind.BreedParams.LactatingPotentialModifierConstantC) * Math.Exp(ind.BreedParams.LactatingPotentialModifierConstantC * (1 - (dayOfLactation / ind.BreedParams.LactatingPotentialModifierConstantB)))*(1 - 0.5 + 0.5 * (ind.Weight/ind.NormalisedAnimalWeight));
+                        double intakeMilkMultiplier = 1 + ind.Parameters.Growth.LactatingPotentialModifierConstantA * Math.Pow((dayOfLactation / ind.Parameters.Growth.LactatingPotentialModifierConstantB), ind.Parameters.Growth.LactatingPotentialModifierConstantC) * Math.Exp(ind.Parameters.Growth.LactatingPotentialModifierConstantC * (1 - (dayOfLactation / ind.Parameters.Growth.LactatingPotentialModifierConstantB)))*(1 - 0.5 + 0.5 * (ind.Weight/ind.NormalisedAnimalWeight));
 
                         // To make this flexible for sheep and goats, added three new Ruminant Coeffs
                         // Feeding standard values for Beef, Dairy suck, Dairy non-suck and sheep are:
@@ -237,17 +237,17 @@ namespace Models.CLEM.Activities
 
             double energyMetabolic = EnergyGross * (((ind.DietDryMatterDigestibility==0)?50:ind.DietDryMatterDigestibility)/100.0) * 0.81;
             // Reference: SCA p.
-            double kl = ind.BreedParams.ELactationEfficiencyCoefficient * energyMetabolic / EnergyGross + ind.BreedParams.ELactationEfficiencyIntercept;
+            double kl = ind.Parameters.Growth.ELactationEfficiencyCoefficient * energyMetabolic / EnergyGross + ind.Parameters.Growth.ELactationEfficiencyIntercept;
             double milkTime = ind.DaysLactating;
             double milkCurve;
             // determine milk production curve to use
             // if milking is taking place use the non-suckling curve for duration of lactation
             // otherwise use the suckling curve where there is a larger drop off in milk production
             if (ind.SucklingOffspringList.Count == 0)
-                milkCurve = ind.BreedParams.MilkCurveNonSuckling;
+                milkCurve = ind.Parameters.Lactation.MilkCurveNonSuckling;
             else // no milking
-                milkCurve = ind.BreedParams.MilkCurveSuckling;
-            ind.MilkProductionPotential = ind.BreedParams.MilkPeakYield * ind.Weight / ind.NormalisedAnimalWeight * (Math.Pow(((milkTime + ind.BreedParams.MilkOffsetDay) / ind.BreedParams.MilkPeakDay), milkCurve)) * Math.Exp(milkCurve * (1 - (milkTime + ind.BreedParams.MilkOffsetDay) / ind.BreedParams.MilkPeakDay));
+                milkCurve = ind.Parameters.Lactation.MilkCurveSuckling;
+            ind.MilkProductionPotential = ind.Parameters.Lactation.MilkPeakYield * ind.Weight / ind.NormalisedAnimalWeight * (Math.Pow(((milkTime + ind.Parameters.Lactation.MilkOffsetDay) / ind.Parameters.Lactation.MilkPeakDay), milkCurve)) * Math.Exp(milkCurve * (1 - (milkTime + ind.Parameters.Lactation.MilkOffsetDay) / ind.Parameters.Lactation.MilkPeakDay));
             ind.MilkProductionPotential = Math.Max(ind.MilkProductionPotential, 0.0);
             // Reference: Potential milk prodn, 3.2 MJ/kg milk - Jouven et al 2008
             double energyMilk = ind.MilkProductionPotential * 3.2 / kl;
@@ -277,7 +277,7 @@ namespace Models.CLEM.Activities
 
             // grow individuals
 
-            IEnumerable<string> breeds = herd.Select(a => a.BreedParams.Name).Distinct();
+            IEnumerable<string> breeds = herd.Select(a => a.Parameters.BreedDetails.Name).Distinct();
             this.Status = ActivityStatus.NotNeeded;
 
             foreach (string breed in breeds)
@@ -285,7 +285,7 @@ namespace Models.CLEM.Activities
                 int unfed = 0;
                 int unfedcalves = 0;
                 double totalMethane = 0;
-                foreach (Ruminant ind in herd.Where(a => a.BreedParams.Name == breed).OrderByDescending(a => a.Age))
+                foreach (Ruminant ind in herd.Where(a => a.Parameters.BreedDetails.Name == breed).OrderByDescending(a => a.Age))
                 {
                     ind.MetabolicIntake = ind.Intake;
                     this.Status = ActivityStatus.Success;
@@ -308,10 +308,10 @@ namespace Models.CLEM.Activities
                         // A Ash stated that the 75% limit is no longer required and DMD above 75% is possible even if unlikely.
 
                         // Crude protein required generally 130g per kg of digestable feed.
-                        double crudeProteinRequired = ind.BreedParams.ProteinCoefficient * ind.DietDryMatterDigestibility / 100;
+                        double crudeProteinRequired = ind.Parameters.Growth.ProteinCoefficient * ind.DietDryMatterDigestibility / 100;
 
                         // adjust for efficiency of use of protein, (default 90%) degradable. now user param.
-                        double crudeProteinSupply = (ind.PercentNOfIntake * 62.5) * ind.BreedParams.ProteinDegradability;
+                        double crudeProteinSupply = (ind.PercentNOfIntake * 62.5) * ind.Parameters.Growth.ProteinDegradability;
                         // This was proteinconcentration * 0.9
 
                         // prevent future divide by zero issues.
@@ -360,8 +360,8 @@ namespace Models.CLEM.Activities
                     totalMethane += methane;
 
                     // grow wool and cashmere
-                    ind.Wool += ind.BreedParams.WoolCoefficient * ind.MetabolicIntake;
-                    ind.Cashmere += ind.BreedParams.CashmereCoefficient * ind.MetabolicIntake;
+                    ind.Wool += ind.Parameters.Growth.WoolCoefficient * ind.MetabolicIntake;
+                    ind.Cashmere += ind.Parameters.Growth.CashmereCoefficient * ind.MetabolicIntake;
                 }
 
                 // alert user to unfed animals in the month as this should not happen
@@ -430,9 +430,9 @@ namespace Models.CLEM.Activities
             double energyMetabolic = energyDiet * 0.81;
             double energyMetabolicFromIntake = energyMetabolic * intakeDaily;
 
-            double km = ind.BreedParams.EMaintEfficiencyCoefficient * energyMetabolic / EnergyGross + ind.BreedParams.EMaintEfficiencyIntercept;
+            double km = ind.Parameters.Growth.EMaintEfficiencyCoefficient * energyMetabolic / EnergyGross + ind.Parameters.Growth.EMaintEfficiencyIntercept;
             // Reference: SCA p.49
-            double kg = ind.BreedParams.EGrowthEfficiencyCoefficient * energyMetabolic / EnergyGross + ind.BreedParams.EGrowthEfficiencyIntercept;
+            double kg = ind.Parameters.Growth.EGrowthEfficiencyCoefficient * energyMetabolic / EnergyGross + ind.Parameters.Growth.EGrowthEfficiencyIntercept;
             double energyPredictedBodyMassChange;
             double energyMaintenance;
             if (!ind.Weaned)
@@ -460,9 +460,9 @@ namespace Models.CLEM.Activities
                 }
                 double energyMilkConsumed = milkIntakeDaily * 3.2;
                 // limit suckling intake of milk per day
-                energyMilkConsumed = Math.Min(ind.BreedParams.MilkIntakeMaximum * 3.2, energyMilkConsumed);
+                energyMilkConsumed = Math.Min(ind.Parameters.Growth.MilkIntakeMaximum * 3.2, energyMilkConsumed);
 
-                energyMaintenance = (ind.BreedParams.EMaintCoefficient * Math.Pow(ind.Weight, 0.75) / kml) * Math.Exp(-ind.BreedParams.EMaintExponent * (((ind.Age == 0) ? 0.1 : ind.Age)));
+                energyMaintenance = (ind.Parameters.Growth.EMaintCoefficient * Math.Pow(ind.Weight, 0.75) / kml) * Math.Exp(-ind.Parameters.Growth.EMaintExponent * (((ind.Age == 0) ? 0.1 : ind.Age)));
                 ind.EnergyBalance = energyMilkConsumed + energyMetabolicFromIntake - energyMaintenance;
                 ind.EnergyIntake = energyMilkConsumed + energyMetabolicFromIntake;
                 ind.EnergyFetus = 0;
@@ -476,9 +476,9 @@ namespace Models.CLEM.Activities
                     //(from Hirata model)
                     feedingValue = 2 * ind.EnergyBalance / (0.85 * energyMaintenance) - 1;
 
-                double energyEmptyBodyGain = ind.BreedParams.GrowthEnergyIntercept1 + feedingValue + (ind.BreedParams.GrowthEnergyIntercept2 - feedingValue) / (1 + Math.Exp(-6 * (ind.Weight / ind.NormalisedAnimalWeight - 0.4)));
+                double energyEmptyBodyGain = ind.Parameters.Growth.GrowthEnergyIntercept1 + feedingValue + (ind.Parameters.Growth.GrowthEnergyIntercept2 - feedingValue) / (1 + Math.Exp(-6 * (ind.Weight / ind.NormalisedAnimalWeight - 0.4)));
 
-                energyPredictedBodyMassChange = ind.BreedParams.GrowthEfficiency * 0.7 * ind.EnergyBalance / energyEmptyBodyGain;
+                energyPredictedBodyMassChange = ind.Parameters.Growth.GrowthEfficiency * 0.7 * ind.EnergyBalance / energyEmptyBodyGain;
             }
             else
             {
@@ -506,7 +506,7 @@ namespace Models.CLEM.Activities
                         double standardReferenceWeight = ind.StandardReferenceWeight;
                         // Potential birth weight
                         // Reference: Freer
-                        double potentialBirthWeight = ind.BreedParams.SRWBirth * standardReferenceWeight * (1 - 0.33 * (1 - ind.Weight / standardReferenceWeight));
+                        double potentialBirthWeight = ind.Parameters.General.SRWBirth * standardReferenceWeight * (1 - 0.33 * (1 - ind.Weight / standardReferenceWeight));
                         double fetusAge = (femaleind.Age - femaleind.AgeAtLastConception) * 30.4;
                         //TODO: Check fetus age correct
                         energyFetus = potentialBirthWeight * 349.16 * 0.000058 * Math.Exp(345.67 - 0.000058 * fetusAge - 349.16 * Math.Exp(-0.000058 * fetusAge)) / 0.13;
@@ -516,12 +516,12 @@ namespace Models.CLEM.Activities
                 //TODO: add draft individual energy requirement
 
                 // set maintenance age to maximum of 6 years (2190 days). Now uses EnergeyMaintenanceMaximumAge
-                double maintenanceAge = Math.Min(ind.Age * 30.4, ind.BreedParams.EnergyMaintenanceMaximumAge * 365);
+                double maintenanceAge = Math.Min(ind.Age * 30.4, ind.Parameters.Growth.EnergyMaintenanceMaximumAge * 365);
 
                 // Reference: SCA p.24
                 // Reference p19 (1.20). Does not include MEgraze or Ecold, also skips M,
                 // 0.000082 is -0.03 Age in Years/365 for days
-                energyMaintenance = ind.BreedParams.Kme * sme * (ind.BreedParams.EMaintCoefficient * Math.Pow(ind.Weight, 0.75) / km) * Math.Exp(-ind.BreedParams.EMaintExponent * maintenanceAge) + (ind.BreedParams.EMaintIntercept * energyMetabolicFromIntake);
+                energyMaintenance = ind.Parameters.Growth.Kme * sme * (ind.Parameters.Growth.EMaintCoefficient * Math.Pow(ind.Weight, 0.75) / km) * Math.Exp(-ind.Parameters.Growth.EMaintExponent * maintenanceAge) + (ind.Parameters.Growth.EMaintIntercept * energyMetabolicFromIntake);
                 ind.EnergyBalance = energyMetabolicFromIntake - energyMaintenance - energyMilk - energyFetus; // milk will be zero for non lactating individuals.
                 double feedingValue;
                 ind.EnergyIntake = energyMetabolicFromIntake;
@@ -538,13 +538,13 @@ namespace Models.CLEM.Activities
                 double weightToReferenceRatio = Math.Min(1.0, ind.Weight / ind.StandardReferenceWeight);
 
                 // Reference:  MJ of Energy required per kg Empty body gain (SCA p.43)
-                double energyEmptyBodyGain = ind.BreedParams.GrowthEnergyIntercept1 + feedingValue + (ind.BreedParams.GrowthEnergyIntercept2 - feedingValue) / (1 + Math.Exp(-6 * (weightToReferenceRatio - 0.4)));
+                double energyEmptyBodyGain = ind.Parameters.Growth.GrowthEnergyIntercept1 + feedingValue + (ind.Parameters.Growth.GrowthEnergyIntercept2 - feedingValue) / (1 + Math.Exp(-6 * (weightToReferenceRatio - 0.4)));
                 // Determine Empty body change from Eebg and Ebal, and increase by 9% for LW change
                 if (MathUtilities.IsPositive(ind.EnergyBalance))
-                    energyPredictedBodyMassChange = ind.BreedParams.GrowthEfficiency * kg * ind.EnergyBalance / energyEmptyBodyGain;
+                    energyPredictedBodyMassChange = ind.Parameters.Growth.GrowthEfficiency * kg * ind.EnergyBalance / energyEmptyBodyGain;
                 else
                     // Reference: from Hirata model
-                    energyPredictedBodyMassChange = ind.BreedParams.GrowthEfficiency * km * ind.EnergyBalance / (0.8 * energyEmptyBodyGain);
+                    energyPredictedBodyMassChange = ind.Parameters.Growth.GrowthEfficiency * km * ind.EnergyBalance / (0.8 * energyEmptyBodyGain);
             }
             energyPredictedBodyMassChange *= 30.4;  // Convert to monthly
 
@@ -555,7 +555,7 @@ namespace Models.CLEM.Activities
             //newWt = Math.Min(newWt, maxwt);
             ind.Weight = Math.Min(
                 Math.Max(0.0, ind.Weight + energyPredictedBodyMassChange),
-                ind.StandardReferenceWeight * ind.BreedParams.MaximumSizeOfIndividual
+                ind.StandardReferenceWeight * ind.Parameters.General.MaximumSizeOfIndividual
                 );
 
             // Function to calculate approximate methane produced by animal, based on feed intake
@@ -564,7 +564,7 @@ namespace Models.CLEM.Activities
             // methane is methaneProduced / 55.28 * 1000; // grams per day
 
             // Charmley et al 2016 can be substituted by intercept = 0 and coefficient = 20.7
-            methaneProduced = ind.BreedParams.MethaneProductionCoefficient * intakeDaily;
+            methaneProduced = ind.Parameters.Growth.MethaneProductionCoefficient * intakeDaily;
         }
 
         /// <summary>
@@ -603,11 +603,11 @@ namespace Models.CLEM.Activities
             List<Ruminant> died;
             if (herd.Any())
             {
-                if (herd.FirstOrDefault().BreedParams.ProportionOfMaxWeightToSurvive >= 0)
-                    died = herd.Where(a => a.Weight < (a.HighWeight * a.BreedParams.ProportionOfMaxWeightToSurvive)).ToList();
+                if (herd.FirstOrDefault().Parameters.General.ProportionOfMaxWeightToSurvive >= 0)
+                    died = herd.Where(a => a.Weight < (a.HighWeight * a.Parameters.General.ProportionOfMaxWeightToSurvive)).ToList();
                 else
                     // body condition score based mortality 
-                    died = herd.Where(a => MathUtilities.IsLessThanOrEqual(a.RelativeCondition, a.BreedParams.BodyConditionScoreForMortality) && MathUtilities.IsLessThanOrEqual(RandomNumberGenerator.Generator.NextDouble(), a.BreedParams.BodyConditionScoreMortalityRate)).ToList();
+                    died = herd.Where(a => MathUtilities.IsLessThanOrEqual(a.RelativeCondition, a.Parameters.General.BodyConditionScoreForMortality) && MathUtilities.IsLessThanOrEqual(RandomNumberGenerator.Generator.NextDouble(), a.Parameters.General.BodyConditionScoreMortalityRate)).ToList();
                 // set died flag
                 died.ForEach(c => c.SaleFlag = HerdChangeReason.DiedUnderweight);
                 ruminantHerd.RemoveRuminant(died, this);
@@ -620,18 +620,18 @@ namespace Models.CLEM.Activities
                 if (!ind.Weaned)
                 {
                     mortalityRate = 0;
-                    if(ind.Mother == null || MathUtilities.IsLessThan(ind.Mother.Weight, ind.BreedParams.CriticalCowWeight * ind.StandardReferenceWeight))
+                    if(ind.Mother == null || MathUtilities.IsLessThan(ind.Mother.Weight, ind.Parameters.Breeding.CriticalCowWeight * ind.StandardReferenceWeight))
                         // if no mother assigned or mother's weight is < CriticalCowWeight * SFR
-                        mortalityRate = ind.BreedParams.JuvenileMortalityMaximum;
+                        mortalityRate = ind.Parameters.General.JuvenileMortalityMaximum;
                     else
                         // if mother's weight >= criticalCowWeight * SFR
-                        mortalityRate = Math.Exp(-Math.Pow(ind.BreedParams.JuvenileMortalityCoefficient * (ind.Mother.Weight / ind.Mother.NormalisedAnimalWeight), ind.BreedParams.JuvenileMortalityExponent));
+                        mortalityRate = Math.Exp(-Math.Pow(ind.Parameters.General.JuvenileMortalityCoefficient * (ind.Mother.Weight / ind.Mother.NormalisedAnimalWeight), ind.Parameters.General.JuvenileMortalityExponent));
 
-                    mortalityRate += ind.BreedParams.MortalityBase;
-                    mortalityRate = Math.Min(mortalityRate, ind.BreedParams.JuvenileMortalityMaximum);
+                    mortalityRate += ind.Parameters.General.MortalityBase;
+                    mortalityRate = Math.Min(mortalityRate, ind.Parameters.General.JuvenileMortalityMaximum);
                 }
                 else
-                    mortalityRate = 1 - (1 - ind.BreedParams.MortalityBase) * (1 - Math.Exp(Math.Pow(-(ind.BreedParams.MortalityCoefficient * (ind.Weight / ind.NormalisedAnimalWeight - ind.BreedParams.MortalityIntercept)), ind.BreedParams.MortalityExponent)));
+                    mortalityRate = 1 - (1 - ind.Parameters.General.MortalityBase) * (1 - Math.Exp(Math.Pow(-(ind.Parameters.General.MortalityCoefficient * (ind.Weight / ind.NormalisedAnimalWeight - ind.Parameters.General.MortalityIntercept)), ind.Parameters.General.MortalityExponent)));
 
                 // convert mortality from annual (calculated) to monthly (applied).
                 if (MathUtilities.IsLessThanOrEqual(RandomNumberGenerator.Generator.NextDouble(), mortalityRate/12))

@@ -35,11 +35,11 @@ namespace Models.CLEM.Resources
                 case RuminantTransactionsGroupingStyle.Combined:
                     return "All";
                 case RuminantTransactionsGroupingStyle.ByPriceGroup:
-                    return BreedParams.GetPriceGroupOfIndividual(this, pricingStyle)?.Name ?? $"{pricingStyle}NotSet";
+                    return Parameters.BreedDetails.GetPriceGroupOfIndividual(this, pricingStyle)?.Name ?? $"{pricingStyle}NotSet";
                 case RuminantTransactionsGroupingStyle.ByClass:
-                    return this.Class;
+                    return Class;
                 case RuminantTransactionsGroupingStyle.BySexAndClass:
-                    return this.FullCategory;
+                    return FullCategory;
                 default:
                     break;
             }
@@ -53,11 +53,6 @@ namespace Models.CLEM.Resources
 
         /// <inheritdoc/>
         public IndividualAttributeList Attributes { get; set; } = new IndividualAttributeList();
-
-        ///// <summary>
-        ///// Reference to the Breed Parameters.
-        ///// </summary>
-        //public RuminantType BreedParams;
 
         /// <summary>
         /// Stores all ruminant parameters for the individual
@@ -174,7 +169,7 @@ namespace Models.CLEM.Resources
         /// <returns></returns>
         public double CalculateNormalisedWeight(double age)
         {
-            return StandardReferenceWeight - ((1 - BreedParams.SRWBirth) * StandardReferenceWeight) * Math.Exp(-(BreedParams.AgeGrowthRateCoefficient * (age * 30.4)) / (Math.Pow(StandardReferenceWeight, BreedParams.SRWGrowthScalar)));
+            return StandardReferenceWeight - ((1 - Parameters.General.SRWBirth) * StandardReferenceWeight) * Math.Exp(-(Parameters.General.AgeGrowthRateCoefficient * (age * 30.4)) / (Math.Pow(StandardReferenceWeight, Parameters.General.SRWGrowthScalar)));
         }
 
         /// <summary>
@@ -228,7 +223,7 @@ namespace Models.CLEM.Resources
             {
                 weight = value;
 
-                adultEquivalent = Math.Pow(this.Weight, 0.75) / Math.Pow(this.BreedParams.BaseAnimalEquivalent, 0.75);
+                adultEquivalent = Math.Pow(this.Weight, 0.75) / Math.Pow(Parameters.General.BaseAnimalEquivalent, 0.75);
 
                 // if highweight has not been defined set to initial weight
                 if (HighWeight == 0)
@@ -309,9 +304,9 @@ namespace Models.CLEM.Resources
             get
             {
                 double result = 0;
-                double min = BreedParams.ProportionOfMaxWeightToSurvive * HighWeight;
+                double min = Parameters.General.ProportionOfMaxWeightToSurvive * HighWeight;
                 double mid = NormalisedAnimalWeight;
-                double max = BreedParams.MaximumSizeOfIndividual;
+                double max = Parameters.General.MaximumSizeOfIndividual;
 
                 if (weight < mid)
                     result = Math.Round((mid - Math.Max(min, weight)) / ((mid - min) / 2.5)) * -1;
@@ -574,9 +569,9 @@ namespace Models.CLEM.Resources
             get
             {
                 if (Sex == Sex.Male)
-                    return BreedParams.SRWFemale * BreedParams.SRWMaleMultiplier;
+                    return Parameters.General.SRWFemale * Parameters.General.SRWMaleMultiplier;
                 else
-                    return BreedParams.SRWFemale;
+                    return Parameters.General.SRWFemale;
             }
         }
 
@@ -626,8 +621,8 @@ namespace Models.CLEM.Resources
         {
             get
             {
-                double bcscore = BreedParams.BCScoreRange[1] + (RelativeCondition - 1) / BreedParams.RelBCToScoreRate;
-                return Math.Max(BreedParams.BCScoreRange[0], Math.Min(bcscore, BreedParams.BCScoreRange[2]));
+                double bcscore = Parameters.General.BCScoreRange[1] + (RelativeCondition - 1) / Parameters.General.RelBCToScoreRate;
+                return Math.Max(Parameters.General.BCScoreRange[0], Math.Min(bcscore, Parameters.General.BCScoreRange[2]));
             }
         }
 
@@ -649,8 +644,8 @@ namespace Models.CLEM.Resources
         public void Wean(bool report, string reason)
         {
             weaned = Convert.ToInt32(Math.Round(Age, 3), CultureInfo.InvariantCulture);
-            if (weaned > Math.Ceiling(BreedParams.GestationLength))
-                weaned = Convert.ToInt32(Math.Ceiling(BreedParams.GestationLength));
+            if (weaned > Math.Ceiling(Parameters.Breeding.GestationLength))
+                weaned = Convert.ToInt32(Math.Ceiling(Parameters.Breeding.GestationLength));
 
             if (Mother != null)
             {
@@ -664,7 +659,7 @@ namespace Models.CLEM.Resources
                     RumObj = this,
                     Category = reason
                 };
-                (this.BreedParams.Parent as RuminantHerd).OnWeanOccurred(args);
+                (this.Parameters.BreedDetails.Parent as RuminantHerd).OnWeanOccurred(args);
             }
 
         }
@@ -823,13 +818,11 @@ namespace Models.CLEM.Resources
             if(indAttribute.SetAttributeSettings is SetAttributeWithProperty attributeSettings)
             {
                 // has the value changed from that in the breed params provided to the individual?
-                object propertyValue = attributeSettings.RuminantPropertyInfo.GetValue(this);
-                if (indAttribute.StoredValue != propertyValue)
-                {
-                    Parameters.Update(attribute.Key, attributeSettings.RuminantPropertyInfo, propertyValue);
-                    // update breedparams property to the new value
-                    //attributeSettings.RuminantPropertyInfo.SetValue(this, indAttribute.StoredValue);
-                }
+                //object propertyValue = attributeSettings.RuminantPropertyInfo.GetValue(this);
+                //if (indAttribute.StoredValue != propertyValue)
+                //{
+                    Parameters.Update(attributeSettings.PropertyParts.Key, attributeSettings.RuminantPropertyInfo, indAttribute.StoredValue);
+                //}
             }
             Attributes.Add(attribute.Key, indAttribute);
         }
@@ -843,15 +836,17 @@ namespace Models.CLEM.Resources
             // get inherited value
             IIndividualAttribute indAttribute = attribute.GetAttribute(true);
 
-            // if it requires a property modifier then create new modified breedparams
-
-            //if breedparams equals mother's create deep copy
-
-            // update breedparams
-
-            // save breed params to individual
-
-            Attributes.Add(attribute.AttributeName, indAttribute); //.Value.GetInheritedAttribute() as IIndividualAttribute);
+            // is this a property attribute that may modify the individuals parameter set?
+            if (indAttribute.SetAttributeSettings is SetAttributeWithProperty attributeSettings)
+            {
+                // has the value changed from that in the breed params provided to the individual?
+                //var propertyValue = attributeSettings.RuminantPropertyInfo.GetValue(this);
+                //if (indAttribute.StoredValue != propertyValue)
+                //{
+                    Parameters.Update(attributeSettings.PropertyParts.Key, attributeSettings.RuminantPropertyInfo, indAttribute.StoredValue);
+                //}
+            }
+            Attributes.Add(attribute.AttributeName, indAttribute);
         }
 
     }

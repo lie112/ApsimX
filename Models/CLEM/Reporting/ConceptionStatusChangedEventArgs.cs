@@ -78,7 +78,7 @@ namespace Models.CLEM.Reporting
                 case ConceptionStatus.Weaned:
                     if (offspringAge is null)
                         throw new ArgumentException("Code logice error: An offspring must be supplied in ConceptionStatusChangedEventArgs when status is Weaned");
-                    ConceptionDate = date.AddMonths(-1 * Convert.ToInt32(offspringAge + Female.BreedParams.GestationLength, CultureInfo.InvariantCulture));
+                    ConceptionDate = date.AddMonths(-1 * Convert.ToInt32(offspringAge + Female.Parameters.Breeding.GestationLength, CultureInfo.InvariantCulture));
                     ConceptionDate = new DateTime(ConceptionDate.Year, ConceptionDate.Month, DateTime.DaysInMonth(ConceptionDate.Year, ConceptionDate.Month));
                     break;
                 case ConceptionStatus.Unsuccessful:

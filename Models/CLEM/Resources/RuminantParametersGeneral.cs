@@ -32,6 +32,7 @@ namespace Models.CLEM.Resources
             JuvenileMortalityCoefficient = baseModel.JuvenileMortalityCoefficient;
             JuvenileMortalityExponent = baseModel.JuvenileMortalityExponent;
             JuvenileMortalityMaximum = baseModel.JuvenileMortalityMaximum;
+            ProportionOfMaxWeightToSurvive = baseModel.ProportionOfMaxWeightToSurvive;
         }
         ///<inheritdoc/>
         public double NaturalWeaningAge { get; set; }
@@ -71,5 +72,8 @@ namespace Models.CLEM.Resources
         public double JuvenileMortalityMaximum { get; set; }
         ///<inheritdoc/>
         public double JuvenileMortalityExponent { get; set; }
+        ///<inheritdoc/>
+        public double ProportionOfMaxWeightToSurvive { get; set; }
+
     }
 }

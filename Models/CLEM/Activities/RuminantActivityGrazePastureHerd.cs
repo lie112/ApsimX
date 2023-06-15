@@ -235,7 +235,7 @@ namespace Models.CLEM.Activities
                         PotentialIntakePastureQualityLimiter = CalculatePotentialIntakePastureQualityLimiter();
                     }
 
-                    PotentialIntakePastureBiomassLimiter = 1 - Math.Exp(-herd.FirstOrDefault().BreedParams.IntakeCoefficientBiomass * this.GrazeFoodStoreModel.TonnesPerHectareStartOfTimeStep * 1000);
+                    PotentialIntakePastureBiomassLimiter = 1 - Math.Exp(-herd.FirstOrDefault().Parameters.Growth.IntakeCoefficientBiomass * this.GrazeFoodStoreModel.TonnesPerHectareStartOfTimeStep * 1000);
 
                     // get list of all Ruminants of specified breed in this paddock
                     foreach (Ruminant ind in herd)
@@ -322,7 +322,7 @@ namespace Models.CLEM.Activities
                 {
                     double eaten;
                     if (ind.Weaned)
-                        eaten = Math.Min(Math.Max(0,ind.PotentialIntake - ind.Intake), ind.PotentialIntake * PotentialIntakePastureQualityLimiter * (1 - Math.Exp(-ind.BreedParams.IntakeCoefficientBiomass * this.GrazeFoodStoreModel.TonnesPerHectareStartOfTimeStep * 1000)) * (HoursGrazed / 8));
+                        eaten = Math.Min(Math.Max(0,ind.PotentialIntake - ind.Intake), ind.PotentialIntake * PotentialIntakePastureQualityLimiter * (1 - Math.Exp(-ind.Parameters.Growth.IntakeCoefficientBiomass * this.GrazeFoodStoreModel.TonnesPerHectareStartOfTimeStep * 1000)) * (HoursGrazed / 8));
                     else
                         eaten = Math.Max(0, ind.PotentialIntake - ind.Intake); ;
 

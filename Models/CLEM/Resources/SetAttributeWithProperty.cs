@@ -31,7 +31,35 @@ namespace Models.CLEM.Resources
         [NonSerialized]
         private PropertyInfo propertyInfo;
 
-        private IEnumerable<string> GetParameters() => (new RuminantGroup()).GetParameterNames().OrderBy(k => k);
+        /// <summary>
+        /// Get the list of parameters availabe for linking to attribute
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<string> GetParameters()
+        {
+            List<string> parameters = new List<string>();
+            parameters.AddRange(typeof(RuminantParametersBreeding)
+                .GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance)
+                //.Where(prop => Attribute.IsDefined(prop, typeof(FilterByPropertyAttribute)))
+                .Select(prop => $"Breeding.{prop.Name}")
+            );
+            parameters.AddRange(typeof(RuminantParametersGeneral)
+                .GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance)
+                //.Where(prop => Attribute.IsDefined(prop, typeof(FilterByPropertyAttribute)))
+                .Select(prop => $"General.{prop.Name}")
+            );
+            parameters.AddRange(typeof(RuminantParametersGrowth)
+                .GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance)
+                //.Where(prop => Attribute.IsDefined(prop, typeof(FilterByPropertyAttribute)))
+                .Select(prop => $"Growth.{prop.Name}")
+            );
+            parameters.AddRange(typeof(RuminantParametersLactation)
+                .GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance)
+                //.Where(prop => Attribute.IsDefined(prop, typeof(FilterByPropertyAttribute)))
+                .Select(prop => $"Lactation.{prop.Name}")
+            );
+            return parameters.OrderBy(k => k);
+        }
 
         /// <summary>
         /// Store of last instance of the individual attribute defined
@@ -123,37 +151,22 @@ namespace Models.CLEM.Resources
         /// </summary>
         public PropertyInfo RuminantPropertyInfo { get { return propertyInfo; }  }
 
+        /// <summary>
+        /// The class key and property to use
+        /// </summary>
+        public (string Key, string Property) PropertyParts { get; set; }
+
         /// <inheritdoc/>
         public IndividualAttribute GetAttribute(bool createNewInstance = true)
         {
             if (createNewInstance || lastInstance is null)
             {
-                //double value = Value;
-                //double randStdNormal = 0;
-
-                //if (StandardDeviation != 0)
-                //{
-                //    double u1 = RandomNumberGenerator.Generator.NextDouble();
-                //    double u2 = RandomNumberGenerator.Generator.NextDouble();
-                //    randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) *
-                //                    Math.Sin(2.0 * Math.PI * u2);
-                //    if (UseStandardDeviationSign)
-                //    {
-                //        randStdNormal = Math.Abs(randStdNormal);
-                //    }
-                //}
-                //value = Math.Min(MaximumValue, Math.Max(MinimumValue, value + StandardDeviation * randStdNormal));
-
-                //Single valuef = Convert.ToSingle(value);
-
                 lastInstance = new IndividualAttribute()
                 {
                     InheritanceStyle = InheritanceStyle,
                     StoredValue = ApplyVariabilityToAttributeValue(Value, false, UseStandardDeviationSign),
                     SetAttributeSettings = this
                 };
-
-                //switch(typeof(Indiv))
             }
             return lastInstance;
         }
@@ -191,7 +204,28 @@ namespace Models.CLEM.Resources
         {
             base.ModelSummaryStyle = HTMLSummaryStyle.SubResource;
             SetDefaults();
-            propertyInfo = typeof(RuminantType).GetProperty(PropertyOfIndividual);
+        }
+
+        ///<inheritdoc/>
+        [EventSubscribe("Commencing")]
+        protected void OnSimulationCommencing(object sender, EventArgs e)
+        {
+            var propertyParts = PropertyOfIndividual.Split('.');
+            PropertyParts = (propertyParts[0], propertyParts[1]);
+            switch (PropertyParts.Key)
+            {
+                case "Breeding":
+                    propertyInfo = typeof(RuminantParametersBreeding).GetProperty(PropertyParts.Property);
+                    break;
+                case "General":
+                    propertyInfo = typeof(RuminantParametersGeneral).GetProperty(PropertyParts.Property);
+                    break;
+                case "Lactation":
+                    propertyInfo = typeof(RuminantParametersLactation).GetProperty(PropertyParts.Property);
+                    break;
+                default:
+                    break;
+            }
         }
 
         #region validation

@@ -46,7 +46,6 @@ namespace Models.CLEM.Resources
             GreenDietCoefficient = baseModel.GreenDietCoefficient;
             GreenDietZero = baseModel.GreenDietZero;
             ProportionalDiscountDueToMilk = baseModel.ProportionalDiscountDueToMilk;
-            ProportionOfMaxWeightToSurvive = baseModel.ProportionOfMaxWeightToSurvive;
             StrictFeedingLimits = baseModel.StrictFeedingLimits;
             WoolCoefficient = baseModel.WoolCoefficient;
             MethaneProductionCoefficient = baseModel.MethaneProductionCoefficient;
@@ -112,8 +111,6 @@ namespace Models.CLEM.Resources
         public double MaxJuvenileIntake { get; set; }
         ///<inheritdoc/>
         public double ProportionalDiscountDueToMilk { get; set; }
-        ///<inheritdoc/>
-        public double ProportionOfMaxWeightToSurvive { get; set; }
         ///<inheritdoc/>
         public double LactatingPotentialModifierConstantA { get; set; }
         ///<inheritdoc/>

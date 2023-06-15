@@ -131,10 +131,6 @@
         /// </summary>
         double ProportionalDiscountDueToMilk { get; set; }
         /// <summary>
-        /// Proportion of max body weight needed for survival
-        /// </summary>
-        double ProportionOfMaxWeightToSurvive { get; set; }
-        /// <summary>
         /// Protein requirement coeff (g/kg feed)
         /// </summary>
         double ProteinCoefficient { get; set; }

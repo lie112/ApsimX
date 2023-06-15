@@ -805,12 +805,6 @@ namespace Models.CLEM.Resources
         #region Breed activity
 
         /// <summary>
-        /// Advanced conception parameters if present
-        /// </summary>
-        [JsonIgnore]
-        public IConceptionModel ConceptionModel { get; set; }
-
-        /// <summary>
         /// Milk curve shape suckling
         /// </summary>
         [Category("Advanced", "Lactation")]

@@ -24,6 +24,8 @@ namespace Models.CLEM.Resources
             modified.Add("Growth", false);
             Breeding = new RuminantParametersBreeding(baseType);
             modified.Add("Breeding", false);
+            Lactation = new RuminantParametersLactation(baseType);
+            modified.Add("Lactation", false);
         }
 
         /// <summary>
@@ -41,6 +43,8 @@ namespace Models.CLEM.Resources
             modified.Add("Growth", false);
             Breeding = parent.Breeding;
             modified.Add("Breeding", false);
+            Lactation = parent.Lactation;
+            modified.Add("Lactation", false);
         }
 
         /// <summary>

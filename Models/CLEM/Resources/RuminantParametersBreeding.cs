@@ -20,7 +20,7 @@ namespace Models.CLEM.Resources
             MinimumAge1stMating = baseModel.MinimumAge1stMating;
             MinimumSize1stMating = baseModel.MinimumSize1stMating;
             MinimumDaysBirthToConception = baseModel.MinimumDaysBirthToConception;
-            MultipleBirthRate = baseModel.MultipleBirthRate.Clone() as double[];
+            MultipleBirthRate = baseModel.MultipleBirthRate?.Clone() as double[];
             CriticalCowWeight = baseModel.CriticalCowWeight;
             MaximumMaleMatingsPerDay = baseModel.MaximumMaleMatingsPerDay;
             PrenatalMortality = baseModel.PrenatalMortality;
