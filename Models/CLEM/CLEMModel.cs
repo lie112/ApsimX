@@ -19,13 +19,8 @@ namespace Models.CLEM
     ///</summary>
     [Serializable]
     [Description("This is the Base CLEM model and should not be used directly.")]
-    public abstract class CLEMModel : Model, ICLEMUI, IStructureDependency
+    public abstract class CLEMModel : Model, ICLEMUI
     {
-        /// <summary>Structure instance supplied by APSIM.core.</summary>
-        [field: NonSerialized]
-        [JsonIgnore]
-        public IStructure Structure { get; set; }
-    
         /// <summary>
         /// Link to summary
         /// </summary>
@@ -103,16 +98,7 @@ namespace Models.CLEM
         /// <param name="model">The requesting model</param>
         public static void CheckModelAssociations(Model model)
         {
-            IStructure structure;
-            if (model is CLEMModel clemModel)
-            {
-                structure = clemModel.Structure;
-            }
-            else if (model is ZoneCLEM zoneModel)
-            {
-                structure = zoneModel.Structure;
-            }
-            else
+            if (model is not CLEMModel && model is not ZoneCLEM)
             {
                 return;
             }
@@ -126,21 +112,21 @@ namespace Models.CLEM
                     switch (requiredAttribte.AssociationStyles[i])
                     {
                         case ModelAssociationStyle.InScope:
-                            if (structure.FindAll<Model>(relativeTo: model).Where(a => a.GetType() == requiredAttribte.AssociatedModels[i]).Any() == false)
+                            if (model.Node.FindAll<Model>().Where(a => a.GetType() == requiredAttribte.AssociatedModels[i]).Any() == false)
                             {
                                 errors.Add($"Cannot find required component [x={requiredAttribte.AssociatedModels[i].Name}] in scope for [x={model.FullPath}]");
                             }
 
                             break;
                         case ModelAssociationStyle.Descendent:
-                            if (structure.FindChildren<CLEMModel>(relativeTo: model, recurse: true).Where(a => a.GetType() == requiredAttribte.AssociatedModels[i]).Any() == false)
+                            if (model.Node.FindChildren<CLEMModel>(recurse: true).Where(a => a.GetType() == requiredAttribte.AssociatedModels[i]).Any() == false)
                             {
                                 errors.Add($"Cannot find required component [x={requiredAttribte.AssociatedModels[i].Name}] as descendent of [x={model.FullPath}]");
                             }
 
                             break;
                         case ModelAssociationStyle.Child:
-                            if (structure.FindChildren<CLEMModel>(relativeTo: model).Where(a => a.GetType() == requiredAttribte.AssociatedModels[i]).Any() == false)
+                            if (model.Node.FindChildren<CLEMModel>().Where(a => a.GetType() == requiredAttribte.AssociatedModels[i]).Any() == false)
                             {
                                 errors.Add($"Cannot find required component [x={requiredAttribte.AssociatedModels[i].Name}] as child of [x={model.FullPath}]");
                             }
@@ -148,11 +134,11 @@ namespace Models.CLEM
                             break;
                         case ModelAssociationStyle.DescendentOfRuminantType:
                             // find Ruminant Types
-                            var zone = structure.FindParent<Zone>(relativeTo: model, recurse: true);
-                            var rumTypes = structure.FindChildren<RuminantType>(relativeTo: zone, recurse: true);
+                            var zone = model.Node.FindParent<Zone>(recurse: true);
+                            var rumTypes = zone.Node.FindChildren<RuminantType>(recurse: true);
                             foreach (var rumType in rumTypes)
                             {
-                                if (structure.FindChildren<CLEMModel>(relativeTo: rumType, recurse: true).Where(a => a.GetType() == requiredAttribte.AssociatedModels[i]).Any() == false)
+                                if (rumType.Node.FindChildren<CLEMModel>(recurse: true).Where(a => a.GetType() == requiredAttribte.AssociatedModels[i]).Any() == false)
                                 {
                                     errors.Add($"Cannot find required component [x={requiredAttribte.AssociatedModels[i].Name}] as descendent of [r={rumType.Name}] as required by [x={model.FullPath}]");
                                 }
@@ -163,7 +149,7 @@ namespace Models.CLEM
 
                 if (requiredAttribte.SingleInstance)
                 {
-                    var allFound = structure.FindAll<Model>(relativeTo: model).Where(a => a.GetType() == model.GetType());
+                    var allFound = model.Node.FindAll<Model>().Where(a => a.GetType() == model.GetType());
                     if (allFound.Count() > 1 && allFound.FirstOrDefault() == model)
                     {
                         errors.Add($"Only one instance of [x={model.GetType().Name}] is allowed in scope of [CLEM].");
@@ -172,9 +158,9 @@ namespace Models.CLEM
 
                 if (errors.Any())
                 {
-                    var sim = structure.FindParent<Simulation>(relativeTo: model, recurse: true);
-                    Summary summary = structure.FindChild<Summary>(relativeTo: sim, recurse: true);
-                    var zone = structure.FindParent<Zone>(relativeTo: model, recurse: true);
+                    var sim = model.Node.FindParent<Simulation>(recurse: true);
+                    Summary summary = sim.Node.FindChild<Summary>(recurse: true);
+                    var zone = model.Node.FindParent<Zone>(recurse: true);
                     foreach (var error in errors)
                         summary.WriteMessage(zone, error, MessageType.Error);
                 }
@@ -185,9 +171,9 @@ namespace Models.CLEM
 
                 if(!validParents.Where(a => a.ParentType == (model as IModel).Parent.GetType() | (a.ParentType.IsInterface && model.Parent.GetType().GetInterfaces().Contains(a.ParentType)) | (model.Parent.GetType().IsSubclassOf(a.ParentType))).Any())
                 {
-                    var sim = structure.FindParent<Simulation>(relativeTo: model, recurse: true);
-                    Summary summary = structure.FindChild<Summary>(relativeTo: sim, recurse: true);
-                    var zone = structure.FindParent<Zone>(relativeTo: model, recurse: true);
+                    var sim = model.Node.FindParent<Simulation>(recurse: true);
+                    Summary summary = sim.Node.FindChild<Summary>(recurse: true);
+                    var zone = model.Node.FindParent<Zone>(recurse: true);
                     if (validParents.Count() > 1)
                     {
                         summary.WriteMessage(zone, $"Only a component of type {string.Join(',', validParents.Select(a => $"[{a.ParentType.Name}]"))} is permitted as a parent of [x={model.FullPath}]", MessageType.Error);
@@ -210,7 +196,7 @@ namespace Models.CLEM
             {
                 if (activityTimers is null)
                 {
-                    activityTimers = Structure.FindChildren<IActivityTimer>();
+                    activityTimers = Node.FindChildren<IActivityTimer>();
                 }
 
                 return activityTimers;
@@ -224,7 +210,7 @@ namespace Models.CLEM
         {
             get
             {
-                var result = Structure.FindChildren<IActivityTimer>().Sum(a => a.ActivityDue ? 0 : 1);
+                var result = ActivityTimers.Sum(a => a.ActivityDue ? 0 : 1);
                 return (result == 0);
             }
         }
@@ -237,10 +223,10 @@ namespace Models.CLEM
         public IEnumerable<string> GetResourcesAvailableByName(object[] typesToFind)
         {
             List<string> results = new();
-            Zone zone = Structure.FindParent<Zone>(recurse: true);
+            Zone zone = Node.FindParent<Zone>(recurse: true);
             if (zone is not null)
             {
-                ResourcesHolder resources = Structure.FindChild<ResourcesHolder>(relativeTo: zone);
+                ResourcesHolder resources = zone.Node.FindChild<ResourcesHolder>();
                 if (resources is not null)
                 {
                     foreach (object type in typesToFind)
@@ -255,12 +241,12 @@ namespace Models.CLEM
                             IEnumerable<string> list = null;
                             if (res != null)
                             {
-                                list = Structure.FindChildren<IResourceType>(relativeTo: res).Select(a => (a as CLEMModel).NameWithParent) ?? null;
+                                list = res.Node.FindChildren<IResourceType>().Select(a => (a as CLEMModel).NameWithParent) ?? null;
                             }
 
                             if (list != null)
                             {
-                                results.AddRange(Structure.FindChildren<IResourceType>(relativeTo: res)
+                                results.AddRange(res.Node.FindChildren<IResourceType>(relativeTo: res)
                                        .Select(a => (a as CLEMModel).NameWithParent));
                             }
                         }
@@ -286,7 +272,7 @@ namespace Models.CLEM
                 }
                 else if (type is Type typed)
                 {
-                    results.AddRange(Structure.FindAll<IModel>().Where(a => a.GetType() == typed).Select(a => a.Name));
+                    results.AddRange(Node.FindAll<IModel>().Where(a => a.GetType() == typed).Select(a => a.Name));
                 }
             }
             return results.AsEnumerable();
@@ -299,7 +285,7 @@ namespace Models.CLEM
         /// <returns>A list of model names</returns>
         public IEnumerable<string> GetNameOfModelsByType(Type[] typesToFind)
         {
-            Simulation simulation = Structure.FindParent<Simulation>(recurse: true);
+            Simulation simulation = Node.FindParent<Simulation>(recurse: true);
             if (simulation is null)
             {
                 return new List<string>().AsEnumerable();
@@ -307,7 +293,7 @@ namespace Models.CLEM
             else
             {
                 List<Type> types = new();
-                return Structure.FindChildren<IModel>(relativeTo: simulation, recurse: true).Where(a => typesToFind.ToList().Contains(a.GetType())).Select(a => a.Name);
+                return simulation.Node.FindChildren<IModel>(recurse: true).Where(a => typesToFind.ToList().Contains(a.GetType())).Select(a => a.Name);
             }
         }
 
@@ -345,7 +331,7 @@ namespace Models.CLEM
         public bool ParentSuppliedIdentifiersPresent()
         {
             var psi = ParentSuppliedIdentifiers();
-            return (psi != null && psi.Any());
+            return (psi != null && psi.Count != 0);
         }
 
         /// <summary>

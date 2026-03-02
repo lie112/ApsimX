@@ -94,7 +94,7 @@ namespace Models.CLEM.Activities
             {
                 if (value != enabled)
                 {
-                    foreach (var child in Structure.FindChildren<CLEMActivityBase>())
+                    foreach (var child in Node.FindChildren<CLEMActivityBase>())
                     {
                         child.ActivityEnabled = value;
                     }
@@ -113,7 +113,7 @@ namespace Models.CLEM.Activities
             {
                 if (parentZone is null)
                 {
-                    parentZone = Structure.FindParent<ZoneCLEM>(recurse: true);
+                    parentZone = Node.FindParent<ZoneCLEM>(recurse: true);
                 }
 
                 if (parentZone is null)
@@ -296,12 +296,12 @@ namespace Models.CLEM.Activities
         /// <summary>
         /// Method to create Transaction category based on settings in ZoneCLEM
         /// </summary>
-        public static string UpdateTransactionCategory(CLEMActivityBase model, IStructure structure, string relatesToValue = "")
+        public static string UpdateTransactionCategory(CLEMActivityBase model, string relatesToValue = "")
         {
             List<string> transCatsList = new();
             if (model.parentZone is null)
             {
-                model.parentZone = structure.FindParent<ZoneCLEM>(relativeTo: model, recurse: true);
+                model.parentZone = model.Node.FindParent<ZoneCLEM>(recurse: true);
                 if (model.parentZone is null)
                 {
                     return "";
@@ -333,7 +333,7 @@ namespace Models.CLEM.Activities
         protected virtual void OnInitialSummary(object sender, EventArgs e)
         {
             // create Transaction category based on Zone settings
-            TransactionCategory = UpdateTransactionCategory(this, Structure);
+            TransactionCategory = UpdateTransactionCategory(this);
             Status = ActivityStatus.NoTask; 
         }
 
@@ -346,7 +346,7 @@ namespace Models.CLEM.Activities
             // if this activity supports companion child models for controlling resource requirements
             if (this is IHandlesActivityCompanionModels)
             {
-                foreach (Type componentType in Structure.FindChildren<IActivityCompanionModel>().Select(a => a.GetType()).Distinct())
+                foreach (Type componentType in Node.FindChildren<IActivityCompanionModel>().Select(a => a.GetType()).Distinct())
                 {
                     switch (componentType.Name)
                     {
@@ -465,7 +465,7 @@ namespace Models.CLEM.Activities
 
             foreach (var id in ids)
             {
-                var iChildren = Structure.FindChildren<T>().Where(a => (a.Identifier??"") == id && a.Enabled);
+                var iChildren = Node.FindChildren<T>().Where(a => (a.Identifier??"") == id && a.Enabled);
                 if (iChildren.Any())
                 {
                     filters.Add(id, iChildren);
@@ -562,7 +562,7 @@ namespace Models.CLEM.Activities
             // report all timers in setup step to provide all components in 
             // report all timers that were due this time step
             // report timer status and messages when not from setup
-            foreach (IActivityTimer timer in Structure.FindChildren<IActivityTimer>())
+            foreach (IActivityTimer timer in Node.FindChildren<IActivityTimer>())
             {
                 // report activity performed.
                 if (fromSetup | timer.ActivityDue)
@@ -579,7 +579,7 @@ namespace Models.CLEM.Activities
                 timer.StatusMessage = "";
             }
             // call activity performed for all children of type CLEMActivityBase
-            foreach (CLEMActivityBase activity in Structure.FindChildren<CLEMActivityBase>())
+            foreach (CLEMActivityBase activity in Node.FindChildren<CLEMActivityBase>())
             {
                 activity.ReportActivityStatus(level, fromSetup);
             }
@@ -649,7 +649,7 @@ namespace Models.CLEM.Activities
             if (this is IHandlesActivityCompanionModels)
             {
                 // get all companion models except filter groups
-                foreach (IActivityCompanionModel companionChild in Structure.FindChildren<IActivityCompanionModel>().Where(a => identifier != "" ? (a.Identifier ?? "") == identifier : true))
+                foreach (IActivityCompanionModel companionChild in Node.FindChildren<IActivityCompanionModel>().Where(a => identifier != "" ? (a.Identifier ?? "") == identifier : true))
                 {
                     if (companionChild is CLEMActivityBase cChild)
                     {
@@ -672,7 +672,7 @@ namespace Models.CLEM.Activities
             if (this is IHandlesActivityCompanionModels)
             {
                 // get all companion models except filter groups
-                foreach (IActivityCompanionModel companionChild in Structure.FindChildren<IActivityCompanionModel>().Where(a => identifier != "" ? (a.Identifier ?? "") == identifier : true))
+                foreach (IActivityCompanionModel companionChild in Node.FindChildren<IActivityCompanionModel>().Where(a => identifier != "" ? (a.Identifier ?? "") == identifier : true))
                 {
                     if (valuesForCompanionModels.Any() && valuesForCompanionModels.Where(a => a.Key.type == companionChild.GetType().Name).Any())
                     {
@@ -723,7 +723,7 @@ namespace Models.CLEM.Activities
                     if (this is IHandlesActivityCompanionModels)
                     {
                         // get all companion models except filter groups
-                        foreach (IActivityCompanionModel companionChild in Structure.FindChildren<IActivityCompanionModel>().Where(a => identifier != "" ? (a.Identifier ?? "") == identifier : true))
+                        foreach (IActivityCompanionModel companionChild in Node.FindChildren<IActivityCompanionModel>().Where(a => identifier != "" ? (a.Identifier ?? "") == identifier : true))
                         {
                             if (valuesForCompanionModels.Any() && valuesForCompanionModels.Where(a => a.Key.type == companionChild.GetType().Name).Any())
                             {
@@ -787,7 +787,7 @@ namespace Models.CLEM.Activities
         {
             if (this is IHandlesActivityCompanionModels)
             {
-                foreach (var iChild in Structure.FindChildren<IActivityCompanionModel>())
+                foreach (var iChild in Node.FindChildren<IActivityCompanionModel>())
                 {
                     // standardise the type if needed
                     string iChildType = (iChild is RuminantGroupLinked) ? "RuminantGroup" : iChild.GetType().Name;
@@ -870,10 +870,10 @@ namespace Models.CLEM.Activities
         {
             get
             {
-                return Structure.FindChildren<LabourRequirement>().Where(a => a.OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.UseAvailableWithImplications).Any();
+                return Node.FindChildren<LabourRequirement>().Where(a => a.OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.UseAvailableWithImplications).Any();
             }
         }
-
+            
         /// <summary>
         /// Determine resources available and perform transmutation if needed.
         /// </summary>
@@ -905,7 +905,7 @@ namespace Models.CLEM.Activities
                     if (request.ResourceType == typeof(Labour))
                     {
                         // get available labour based on rules and filter groups
-                        request.Available = TakeLabour(request, false, this, Resources, (request.ActivityModel as IReportPartialResourceAction).AllowsPartialResourcesAvailable, Structure);
+                        request.Available = TakeLabour(request, false, this, Resources, (request.ActivityModel as IReportPartialResourceAction).AllowsPartialResourcesAvailable);
                     }
                     else
                     {
@@ -1022,9 +1022,9 @@ namespace Models.CLEM.Activities
 
                 ResourceRequestEventArgs rrEventArgs = new ResourceRequestEventArgs() { Request = item };
 
-                if (item.Resource != null && Structure.FindParent<Market>(relativeTo: item.Resource as Model, recurse: true) != null)
+                if (item.Resource != null && Node.FindParent<Market>(relativeTo: item.Resource as Model, recurse: true) != null)
                 {
-                    ActivitiesHolder marketActivities = Structure.FindChild<ActivitiesHolder>(relativeTo: Resources.FoundMarket);
+                    ActivitiesHolder marketActivities = Resources.FoundMarket.Node.FindChild<ActivitiesHolder>();
                     marketActivities?.ReportActivityShortfall(rrEventArgs);
                 }
                 else
@@ -1078,7 +1078,7 @@ namespace Models.CLEM.Activities
                         if (request.ResourceType == typeof(Labour))
                         {
                             // get available labour based on rules.
-                            request.Available = TakeLabour(request, true, this, Resources, (request.ActivityModel as IReportPartialResourceAction).AllowsPartialResourcesAvailable, Structure);
+                            request.Available = TakeLabour(request, true, this, Resources, (request.ActivityModel as IReportPartialResourceAction).AllowsPartialResourcesAvailable);
                         }
                         else
                         {
@@ -1104,9 +1104,8 @@ namespace Models.CLEM.Activities
         /// <param name="callingModel">Model calling this method.</param>
         /// <param name="resourceHolder">Location of resource holder.</param>
         /// <param name="allowPartialAction">Flag to determine if activity supports partial action on resource shortfall.</param>
-        /// <param name="structure">Structure instance</param>
         /// <returns>The amount of labour (days) provided.</returns>
-        public static double TakeLabour(ResourceRequest request, bool removeFromResource, CLEMModel callingModel, ResourcesHolder resourceHolder, bool allowPartialAction, IStructure structure)
+        public static double TakeLabour(ResourceRequest request, bool removeFromResource, CLEMModel callingModel, ResourcesHolder resourceHolder, bool allowPartialAction)
         {
             if (request.Required == 0) return 0;
 
@@ -1137,7 +1136,7 @@ namespace Models.CLEM.Activities
             }
             else
             {
-                lr = structure.FindChildren<LabourRequirement>(relativeTo: callingModel).FirstOrDefault();
+                lr = callingModel.Node.FindChildren<LabourRequirement>().FirstOrDefault();
             }
 
             // only update limits for request on initial check of resources
@@ -1268,7 +1267,7 @@ namespace Models.CLEM.Activities
                         }
                     }
                 }
-                current = structure.FindChildren<LabourGroup>(relativeTo: current).FirstOrDefault();
+                current = current.Node.FindChildren<LabourGroup>().FirstOrDefault();
             }
             return amountProvided;
         }

@@ -249,7 +249,7 @@ namespace Models.CLEM.Activities
             }
             else
             {
-                var ruminantTypeChildren = Structure.FindChildren<RuminantType>(relativeTo: HerdResource);
+                var ruminantTypeChildren = HerdResource.Node.FindChildren<RuminantType>();
                 if (!ruminantTypeChildren.Any())
                 {
                     throw new ApsimXException(this, $"No Ruminant Type exists for Activity [a={Name}]{Environment.NewLine}Please supply a ruminant type in the Ruminant Group of the Resources");
