@@ -107,7 +107,7 @@ namespace UserInterface.Presenters
             this.model = model as Model;
             if (model is CLEMModel cm)
             {
-                userLevel = (int)(cm.Structure.Find<ZoneCLEM>()?.UserType ?? CLEMUserType.General);
+                userLevel = (int)(cm.Node.Find<ZoneCLEM>()?.UserType ?? CLEMUserType.General);
             }
             //else
             //{

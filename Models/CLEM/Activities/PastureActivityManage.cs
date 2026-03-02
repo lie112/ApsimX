@@ -154,19 +154,19 @@ namespace Models.CLEM.Activities
             // locate Land Type resource for this forage.
             LinkedLandItem = Resources.FindResourceType<Land, LandType>(this, LandTypeNameToUse, OnMissingResourceActionTypes.ReportErrorAndStop, OnMissingResourceActionTypes.ReportErrorAndStop);
 
-            relationshipLC = Structure.FindChildren<Relationship>().Where(a => a.Identifier == "Utilisation % to change in Land condition index").FirstOrDefault();
+            relationshipLC = Node.FindChildren<Relationship>().Where(a => a.Identifier == "Utilisation % to change in Land condition index").FirstOrDefault();
             if (relationshipLC != null)
             {
-                LandConditionIndex = Structure.FindChild<RelationshipRunningValue>(relativeTo: relationshipLC);
+                LandConditionIndex = relationshipLC.Node.FindChild<RelationshipRunningValue>();
             }
 
-            relationshipGBA = Structure.FindChildren<Relationship>().Where(a => a.Identifier == "Utilisation % to change in Grass basal area").FirstOrDefault();
+            relationshipGBA = Node.FindChildren<Relationship>().Where(a => a.Identifier == "Utilisation % to change in Grass basal area").FirstOrDefault();
             if (relationshipGBA != null)
             {
-                GrassBasalArea = Structure.FindChild<RelationshipRunningValue>(relativeTo: relationshipGBA);
+                GrassBasalArea = relationshipGBA.Node.FindChild<RelationshipRunningValue>();
             }
 
-            filePasture = Structure.FindAll<CLEMModel>().Where(a => a.Name == PastureDataReader).FirstOrDefault() as IFilePasture;
+            filePasture = Node.FindAll<CLEMModel>().Where(a => a.Name == PastureDataReader).FirstOrDefault() as IFilePasture;
 
             if (LandConditionIndex is null || GrassBasalArea is null || filePasture is null)
             {
@@ -177,7 +177,7 @@ namespace Models.CLEM.Activities
             if (filePasture != null)
             {
                 // check that database has region id and land id
-                ZoneCLEM clem = Structure.FindParent<ZoneCLEM>(recurse: true);
+                ZoneCLEM clem = Node.FindParent<ZoneCLEM>(recurse: true);
                 int recs = filePasture.RecordsFound((filePasture as FileSQLitePasture).RegionColumnName, clem.ClimateRegion);
                 if (recs == 0)
                 {
