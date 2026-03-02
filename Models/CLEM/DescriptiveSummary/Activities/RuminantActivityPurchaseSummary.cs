@@ -18,7 +18,7 @@ namespace Models.CLEM.DescriptiveSummary
 
             generator.AddBlockWithText($"Purchased individuals will be placed in {generator.DisplaySummaryValueSnippet(model.GrazeFoodStoreName, "Not specified - general yards", HTMLSummaryStyle.Resource)}");
 
-            Relationship numberRelationship = ModelTyped.Structure.FindChildren<Relationship>().Where(a => a.Identifier == "Number to stock vs pasture").FirstOrDefault();
+            Relationship numberRelationship = ModelTyped.Node.FindChildren<Relationship>().Where(a => a.Identifier == "Number to stock vs pasture").FirstOrDefault();
             if (string.IsNullOrWhiteSpace(ModelTyped.GrazeFoodStoreName) == false && ModelTyped.GrazeFoodStoreName.StartsWith("Not specified") == false && numberRelationship != null)
             {
                 generator.AddBlockWithText( $"The relationship {generator.DisplaySummaryValueSnippet(numberRelationship.Name)} will be used to calculate numbers purchased based on destination pasture biomass (t\\ha)");

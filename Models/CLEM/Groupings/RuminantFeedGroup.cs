@@ -95,7 +95,7 @@ namespace Models.CLEM.Groupings
         [EventSubscribe("CLEMInitialiseActivity")]
         private void OnCLEMInitialiseActivity(object sender, EventArgs e)
         {
-            feedActivityParent = Structure.FindParent<RuminantActivityFeed>(recurse: true);
+            feedActivityParent = Node.FindParent<RuminantActivityFeed>(recurse: true);
             currentFeedRequest = new ResourceRequest()
             {
                 AllowTransmutation = true,
@@ -138,7 +138,7 @@ namespace Models.CLEM.Groupings
             }
 
             // warning that any take filters will be ignored.
-            if (Structure.FindChildren<TakeFromFiltered>(recurse: true).Any())
+            if (Node.FindChildren<TakeFromFiltered>(recurse: true).Any())
             {
                 string warnMessage = $"The [TakeFiltered] component of [f={this.NameWithParent}] is not valid for [OtherAnimalFeedGroup].Take or Skip will be ignored.";
                 Warnings.CheckAndWrite(warnMessage, Summary, this, MessageType.Warning);

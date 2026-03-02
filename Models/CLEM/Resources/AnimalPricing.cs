@@ -29,11 +29,11 @@ namespace Models.CLEM.Resources
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
 
-            if (Structure.FindChildren<AnimalPriceGroup>().Count() == 0)
+            if (Node.FindChildren<AnimalPriceGroup>().Count() == 0)
             {
                 yield return new ValidationResult("No [AnimalPriceGroups] have been provided for [r=" + this.Name + "].\r\nAdd [AnimalPriceGroups] to include animal pricing.", new string[] { "Animal pricing" });
             }
-            else if (Structure.FindChildren<AnimalPriceGroup>().Cast<AnimalPriceGroup>().Where(a => a.Value == 0).Count() > 0)
+            else if (Node.FindChildren<AnimalPriceGroup>().Where(a => a.Value == 0).Count() > 0)
             {
                 string warn = $"No price [Value] has been set for some of the [AnimalPriceGroups] in [r={this.Name}]{Environment.NewLine}These will not result in price calculations and can be deleted unless this is intended.";
                 Warnings.CheckAndWrite(warn, Summary, this, MessageType.Warning);

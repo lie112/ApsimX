@@ -68,13 +68,13 @@ namespace Models.CLEM.Resources
                 ManagedPasture = resources.FindResourceType<ResourceBaseWithTransactions, IResourceType>(this, ManagedPastureName, OnMissingResourceActionTypes.ReportErrorAndStop, OnMissingResourceActionTypes.ReportErrorAndStop) as GrazeFoodStoreType;
             }
 
-            foreach (FileRuminantCohorts cohortsReader in Structure.FindChildren<FileRuminantCohorts>().ToList())
+            foreach (FileRuminantCohorts cohortsReader in Node.FindChildren<FileRuminantCohorts>().ToList())
             {
                 foreach (RuminantTypeCohort cohort in cohortsReader.ReadCohortsFromFile())
                 {
                     cohort.Parent = this;
                     cohort.MinimumTimeStepInterval = this.MinimumTimeStepInterval;
-                    Structure.AddChild(cohort);
+                    Node.AddChild(cohort);
                     Links links = new();
                     links.Resolve(cohort as IModel, true, recurse: false);
                 }
@@ -87,9 +87,9 @@ namespace Models.CLEM.Resources
         /// <returns>A list of ruminants</returns>
         public List<Ruminant> CreateIndividuals(DateTime date)
         {
-            List<ISetAttribute> initialCohortAttributes = [.. Structure.FindChildren<ISetAttribute>()];
+            List<ISetAttribute> initialCohortAttributes = [.. Node.FindChildren<ISetAttribute>()];
             List<Ruminant> individuals = [];
-            foreach (RuminantTypeCohort cohort in Structure.FindChildren<RuminantTypeCohort>())
+            foreach (RuminantTypeCohort cohort in Node.FindChildren<RuminantTypeCohort>())
             {
                 individuals.AddRange(cohort.CreateIndividuals(initialCohortAttributes, date));
             }

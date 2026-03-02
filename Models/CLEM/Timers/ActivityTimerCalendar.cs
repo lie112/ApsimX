@@ -102,7 +102,7 @@ namespace Models.CLEM.Timers
         [EventSubscribe("CLEMInitialiseActivity")]
         private void OnCLEMInitialiseActivity(object sender, EventArgs e)
         {
-            Range = new(events, StartDetails, EndDetails, RepeatInterval, WholeTimeStepMustBeInRange, Structure.FindChildren<ActivityTimerSequence>());
+            Range = new(events, StartDetails, EndDetails, RepeatInterval, WholeTimeStepMustBeInRange, Node.FindChildren<ActivityTimerSequence>());
         }
 
         /// <summary>

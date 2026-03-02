@@ -64,13 +64,13 @@ namespace Models.CLEM.Activities
                 // condition-based intake reduction
                 if (ind.First().Parameters.GrowPF_CI.RelativeConditionEffect_CI20 == 1.0)
                 {
-                    summary = Structure.Find<Summary>();
+                    summary = Node.Find<Summary>();
                     summary.WriteMessage(this, $"Ruminant intake reduction based on high condition is disabled for [{ind.Key}].{Environment.NewLine}To allow this functionality set [Parameters].[GrowPF].[GrowPF CI].RelativeConditionEffect_CI20 to a value greater than [1] (default 1.5)", MessageType.Warning);
                 }
                 // intake reduced by quality of feed
                 if (ind.First().Parameters.GrowPF_CI.IgnoreFeedQualityIntakeAdjustment)
                 {
-                    summary ??= Structure.Find<Summary>();
+                    summary ??= Node.Find<Summary>();
                     summary.WriteMessage(this, $"Ruminant intake reduction based on intake quality is disabled for [{ind.Key}].{Environment.NewLine}To allow this functionality set [Parameters].[GrowPF].[GrowPF CI].IgnoreFeedQualityIntakeAdustment to [False]", MessageType.Warning);
                 }
             }
@@ -287,7 +287,7 @@ namespace Models.CLEM.Activities
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             // check parameters are available for all ruminants.
-            foreach (var item in Structure.FindAll<RuminantType>().Where(a => a.Parameters.GrowSCA07 is null))
+            foreach (var item in Node.FindAll<RuminantType>().Where(a => a.Parameters.GrowSCA07 is null))
             {
                 yield return new ValidationResult($"No [RuminantParametersGrowSCA07] parameters are provided for [{item.NameWithParent}]", new string[] { "RuminantParametersGrowSCA" });
             }

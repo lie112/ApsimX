@@ -32,7 +32,7 @@ public class RuminantDeathGroupRateSummary : GroupSummaryBase<RuminantDeathGroup
         {
             case ParameterStyle.GetFromParameters:
                 htmlWriter.Write($"The annual mortality rates for the specified individuals each time-step are provided in the following breed parameter files: ");
-                foreach (var rumtype in ModelTyped.Structure.FindAll<RuminantType>())
+                foreach (var rumtype in ModelTyped.Node.FindAll<RuminantType>())
                 {
                     htmlWriter.Write(rumtype.Name);
                     if (rumtype.Parameters.GrowPF is not null)

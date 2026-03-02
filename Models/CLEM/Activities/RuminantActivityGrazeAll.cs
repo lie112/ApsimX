@@ -49,11 +49,11 @@ namespace Models.CLEM.Activities
             // create activity for each pasture type (not common land) and breed at startup
             bool newPastureAdded = false;
             Guid nextUID = ActivitiesHolder.AddToGuID(this.UniqueID, 1);
-            foreach (IGrazeFoodStoreType pastureType in Structure.FindChildren<IGrazeFoodStoreType>(relativeTo: grazeFoodStore).Where(a => a is not CommonLandFoodStoreType))  //grazeFoodStore.Children.Where(a => a.GetType().isin == typeof(IGrazeFoodStoreType) || a.GetType() == typeof(CommonLandFoodStoreType)))
+            foreach (IGrazeFoodStoreType pastureType in grazeFoodStore.Node.FindChildren<IGrazeFoodStoreType>().Where(a => a is not CommonLandFoodStoreType))  
             {
                 newPastureAdded = true;
                 var newGrazePasture = new RuminantActivityGrazePasture(this, pastureType, "", nextUID);
-                Structure.AddChild(newGrazePasture);
+                Node.AddChild(newGrazePasture);
                 Links links = new();
                 links.Resolve(newGrazePasture as IModel, true, recurse: false);
                 var apsimEvents = new Events(newGrazePasture);
@@ -64,7 +64,7 @@ namespace Models.CLEM.Activities
 
             if (newPastureAdded)
             {
-                var activities = Structure.FindParent<Simulation>(recurse: true);
+                var activities = Node.FindParent<Simulation>(recurse: true);
                 var apsimEvents = new Events(activities);
                 apsimEvents.ReconnectEvents("CLEMEvents", "CLEMGetResourcesRequired");
             }
@@ -86,7 +86,7 @@ namespace Models.CLEM.Activities
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             // single grazeall
-            if(Structure.FindChildren<RuminantActivityGrazeAll>(relativeTo: ActivitiesHolder, recurse: true).Count() > 1)
+            if(ActivitiesHolder.Node.FindChildren<RuminantActivityGrazeAll>(recurse: true).Count() > 1)
             {
                 yield return new ValidationResult($"Only one [a=RuminantActivityGrazeAll] is permitted per [CLEM] component{Environment.NewLine}The GrazeAll activity will manage all possible grazing on the farm", new string[] { "Ruminant graze all activity" });
             }

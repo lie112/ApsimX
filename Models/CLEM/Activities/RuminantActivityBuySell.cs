@@ -181,7 +181,7 @@ namespace Models.CLEM.Activities
                 herd = GetIndividuals<Ruminant>(GetRuminantHerdSelectionStyle.MarkedForSale);
             }
 
-            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd, Structure);
+            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd);
             IndividualsToBeTrucked = uniqueIndividuals;
             numberToDo = uniqueIndividuals?.Count() ?? 0;
 
@@ -194,7 +194,7 @@ namespace Models.CLEM.Activities
 
                 if (!truckingWithImplications)
                 {
-                    uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd, Structure);
+                    uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd);
                     IndividualsToBeTrucked = uniqueIndividuals;
                 }
             }
@@ -503,8 +503,8 @@ namespace Models.CLEM.Activities
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             // check that all or none of children are ShortfallsWithImplications
-            var truckingComponents = Structure.FindChildren<RuminantTrucking>().Where(a => a.OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.UseAvailableWithImplications).ToList();
-            if (truckingComponents.Count != 0 && (truckingComponents.Count != Structure.FindChildren<RuminantTrucking>().Count()))
+            var truckingComponents = Node.FindChildren<RuminantTrucking>().Where(a => a.OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.UseAvailableWithImplications).ToList();
+            if (truckingComponents.Count != 0 && (truckingComponents.Count != Node.FindChildren<RuminantTrucking>().Count()))
             {
                 yield return new ValidationResult($"All [r=RuminantTrucking] components for [{ActivityStyle}] must be set to [UseAvailableWithImplications] if any are defined for this partial resources available action", new string[] { "RuminantTrucking" });
             }

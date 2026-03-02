@@ -219,7 +219,7 @@ namespace Models.CLEM.Activities
             }
 
             // look up tree until we find a parent to allow nested crop products for rotate vs mixed cropping/products
-            parentManagementActivity = Structure.FindParent<CropActivityManageCrop>(recurse: true);
+            parentManagementActivity = Node.FindParent<CropActivityManageCrop>(recurse: true);
 
             // Retrieve harvest data from the forage file for the entire run.
             // only get entries where a harvest happened (Amtkg > 0)
@@ -235,7 +235,7 @@ namespace Models.CLEM.Activities
             UnitsToHaConverter = (parentManagementActivity.LinkedLandItem.Parent as Land).UnitsOfAreaToHaConversion;
 
             // locate a cut and carry limiter associated with this event.
-            limiter = ActivityCarryLimiter.Locate(this, Structure);
+            limiter = ActivityCarryLimiter.Locate(this);
 
             // check if harvest type tags have been provided
             HarvestTagsUsed = HarvestData.Where(a => a.HarvestType != "").Count() > 0;
@@ -249,7 +249,7 @@ namespace Models.CLEM.Activities
         {
             // parent crop doesn't know pasture area until FinalInitialise activity
             // We must initialise biomass after the crop/pasture area is known
-            if (LinkedResourceItem is GrazeFoodStoreType && Structure.FindChildren<CropActivityManageProduct>(relativeTo: Parent as CropActivityManageCrop)
+            if (LinkedResourceItem is GrazeFoodStoreType && Parent.Node.FindChildren<CropActivityManageProduct>()
                                                                      .Where(a => a.StoreItemName == this.StoreItemName)
                                                                      .FirstOrDefault() == this)
             {
@@ -651,7 +651,7 @@ namespace Models.CLEM.Activities
             // ensure we don't try and change the crop area planeted when using unallocated land
             if (PlantedMultiplier != 1)
             {
-                var parentManageCrop = Structure.FindParent<CropActivityManageCrop>(recurse: true);
+                var parentManageCrop = Node.FindParent<CropActivityManageCrop>(recurse: true);
                 if (parentManageCrop != null && parentManageCrop.UseAreaAvailable)
                 {
                     yield return new ValidationResult($"You cannot alter the crop area planted for product [a={Name}] when the crop [a={parentManageCrop.NameWithParent}] is set to use all available land", new string[] { "Invalid crop area" });

@@ -102,7 +102,7 @@ namespace Models.CLEM.Timers
             }
 
             // get list of filters
-            filterGroups = Structure.FindChildren<RuminantGroup>();
+            filterGroups = Node.FindChildren<RuminantGroup>();
             if (!filterGroups.Any())
             {
                 string warn = $"The timer [a={NameWithParent}] requires at least one [f=RuminantGroup] placed below to identify individuals to consider";
@@ -133,7 +133,7 @@ namespace Models.CLEM.Timers
                 if (clock.Today != checkDate)
                 {
                     // filter based on all filter groups
-                    uniqueIndividuals = CLEMRuminantActivityBase.GetUniqueIndividuals<Ruminant>(filterGroups, parentRuminantBase.CurrentHerd(), Structure);
+                    uniqueIndividuals = CLEMRuminantActivityBase.GetUniqueIndividuals<Ruminant>(filterGroups, parentRuminantBase.CurrentHerd());
 
                     if (TimerStyle == ActivityTimerRuminantLevelStyle.NumberOfIndividuals)
                     {

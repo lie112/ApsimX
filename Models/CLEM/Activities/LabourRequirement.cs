@@ -190,7 +190,7 @@ namespace Models.CLEM.Activities
 
             if (MathUtilities.IsPositive(daysNeeded))
             {
-                foreach (LabourGroup fg in Structure.FindChildren<LabourGroup>())
+                foreach (LabourGroup fg in Node.FindChildren<LabourGroup>())
                 {
                     int numberOfPpl = 1;
                     if (ApplyToAll)
@@ -245,23 +245,25 @@ namespace Models.CLEM.Activities
                 Summary.WriteMessage(this, "No [r=LabourResourceTypes] are provided in the [r=Labour] resource. All [LabourRequirement] will be ignored.", MessageType.Warning);
             }
 
+            var labourGroups = Node.FindChildren<LabourGroup>();
+
             // check filter groups present
-            if (!Structure.FindChildren<LabourGroup>().Any())
+            if (!labourGroups.Any())
             {
                 yield return new ValidationResult($"No [f=LabourFilterGroup] is provided with the [LabourRequirement] for [a={NameWithParent}].{Environment.NewLine}Add a [LabourFilterGroup] to specify individuals for this activity.", new string[] { "Labour filter group" });
             }
 
             // check for individual nesting.
-            foreach (LabourGroup labourGroup in Structure.FindChildren<LabourGroup>())
+            foreach (LabourGroup labourGroup in labourGroups)
             {
                 LabourGroup currentFilterGroup = labourGroup;
-                while (currentFilterGroup != null && Structure.FindChildren<LabourGroup>(relativeTo: currentFilterGroup).Any())
+                while (currentFilterGroup != null && currentFilterGroup.Node.FindChildren<LabourGroup>().Any())
                 {
-                    if (Structure.FindChildren<LabourGroup>(relativeTo: currentFilterGroup).Count() > 1)
+                    if (currentFilterGroup.Node.FindChildren<LabourGroup>().Count() > 1)
                     {
                         yield return new ValidationResult($"Invalid nested labour filter groups in [f={currentFilterGroup.Name}] for [a={Name}]. Only one nested filter group is permitted each branch. Additional filtering will be ignored.", new string[] { "Labour filter group" });
                     }
-                    currentFilterGroup = Structure.FindChildren<LabourGroup>(relativeTo: currentFilterGroup).FirstOrDefault();
+                    currentFilterGroup = currentFilterGroup.Node.FindChildren<LabourGroup>().FirstOrDefault();
                 }
             }
         }

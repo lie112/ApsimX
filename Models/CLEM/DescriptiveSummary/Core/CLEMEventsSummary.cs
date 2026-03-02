@@ -34,7 +34,7 @@ public class CLEMEventsSummary : DescriptiveSummaryProviderBase<CLEMEvents>
         }
         generator.AddBlockWithText(output);
 
-        if (ModelTyped.Structure.FindAll<RuminantActivityGrazeAll>().Any() || ModelTyped.Structure.FindAll<RuminantActivityGrazePasture>().Any() || ModelTyped.Structure.FindAll<RuminantActivityGrazePastureHerd>().Any())
+        if (ModelTyped.Node.FindAll<RuminantActivityGrazeAll>().Any() || ModelTyped.Node.FindAll<RuminantActivityGrazePasture>().Any() || ModelTyped.Node.FindAll<RuminantActivityGrazePastureHerd>().Any())
         {
             generator.AddBlockWithText($"Ecological indicators will be calculated every {generator.DisplaySummaryValueSnippet(ModelTyped.EcologicalIndicatorsCalculationInterval)} months starting at the end of {generator.DisplaySummaryValueSnippet(ModelTyped.EcologicalIndicatorsCalculationMonth)}");
         }

@@ -14,12 +14,12 @@ public class FinanceActivityCalculateInterestSummary : DescriptiveSummaryProvide
     /// <inheritdoc/>
     public override void BuildSummary()
     {
-        ZoneCLEM clemParent = ModelTyped.Structure.FindParent<ZoneCLEM>(recurse: true);
+        ZoneCLEM clemParent = ModelTyped.Node.FindParent<ZoneCLEM>(recurse: true);
         ResourcesHolder resHolder;
         Finance finance = null;
         if (clemParent != null)
         {
-            resHolder = ModelTyped.Structure.FindChildren<ResourcesHolder>(relativeTo: clemParent).FirstOrDefault() as ResourcesHolder;
+            resHolder = clemParent.Node.FindChildren<ResourcesHolder>().FirstOrDefault();
             finance = resHolder.FindResourceGroup<Finance>();
             if (finance != null && !finance.Enabled)
                 finance = null;
@@ -31,7 +31,7 @@ public class FinanceActivityCalculateInterestSummary : DescriptiveSummaryProvide
         else
         {
             generator.AddBlockWithText($"Interest rates are set in the {generator.DisplaySummaryResourceTypeSnippet("FinanceType")} component.");
-            foreach (FinanceType accnt in ModelTyped.Structure.FindChildren<FinanceType>(relativeTo: finance).Where(a => a.Enabled))
+            foreach (FinanceType accnt in finance.Node.FindChildren<FinanceType>().Where(a => a.Enabled))
             {
                 if (accnt.InterestRateCharged == 0 & accnt.InterestRatePaid == 0)
                 {

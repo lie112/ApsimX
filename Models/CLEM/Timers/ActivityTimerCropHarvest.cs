@@ -58,7 +58,7 @@ namespace Models.CLEM.Timers
         [EventSubscribe("CLEMInitialiseActivity")]
         private void OnCLEMInitialiseActivity(object sender, EventArgs e)
         {
-            sequenceTimerList = Structure.FindChildren<ActivityTimerSequence>();
+            sequenceTimerList = Node.FindChildren<ActivityTimerSequence>();
         }
 
         /// <summary>

@@ -142,7 +142,7 @@ namespace Models.CLEM.Resources
             {
                 if (property.PropertyType.GetInterfaces().Contains(typeof(ISubParameters)))
                 {
-                    var subParameterModel = ruminantType.Structure.FindChildren<CLEMModel>(recurse: true).Where(a => a.GetType() == property.PropertyType).FirstOrDefault();
+                    var subParameterModel = ruminantType.Node.FindChildren<CLEMModel>(recurse: true).Where(a => a.GetType() == property.PropertyType).FirstOrDefault();
                     property.SetValue(this, subParameterModel);
                 }
             }

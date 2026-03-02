@@ -73,7 +73,7 @@ namespace Models.CLEM.Activities
             Status = ActivityStatus.NoTask;
             AllocationStyle = ResourceAllocationStyle.Manual;
 
-            controlledMating = Structure.FindChildren<RuminantActivityControlledMating>().FirstOrDefault();
+            controlledMating = Node.FindChild<RuminantActivityControlledMating>();
 
             // Assignment of mothers was moved to RuminantHerd resource to ensure this is done even if no breeding activity is included
             InitialiseHerd(false, true);

@@ -177,7 +177,7 @@ public abstract class DescriptiveSummaryProvider : IDescriptiveSummaryProvider
 
             generator.AddBlockWithText(divText, "entryValue partial");
 
-            string transCat = CLEMActivityBase.UpdateTransactionCategory(cmab, cm.Structure);
+            string transCat = CLEMActivityBase.UpdateTransactionCategory(cmab);
             if (transCat != "")
             {
                 generator.AddBlockWithText($"tag: {transCat}", "entryValue partial");

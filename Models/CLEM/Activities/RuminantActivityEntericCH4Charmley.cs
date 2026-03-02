@@ -41,7 +41,7 @@ namespace Models.CLEM.Activities
         private void OnCLEMInitialiseActivity(object sender, EventArgs e)
         {
             // find first GreenhouseGasType flagged to auto collect methane. 
-            methaneEmissions = Structure.FindAll<GreenhouseGasesType>().Where(a => a.AutoCollectType == GreenhouseGasTypes.CH4).FirstOrDefault();
+            methaneEmissions = Node.FindAll<GreenhouseGasesType>().Where(a => a.AutoCollectType == GreenhouseGasTypes.CH4).FirstOrDefault();
             if(methaneEmissions is not null)
                 InitialiseHerd(false, true);
         }

@@ -133,7 +133,7 @@ namespace Models.CLEM.Activities
             var grazeFoodStore = Resources.FindResourceGroup<GrazeFoodStore>();
             if (grazeFoodStore != null)
             {
-                paddocks =Structure.FindChildren<GrazeFoodStoreType>(relativeTo: grazeFoodStore);
+                paddocks = grazeFoodStore.Node.FindChildren<GrazeFoodStoreType>();
             }
 
             paddockShortfalls = new List<(string paddockName, double number, double AE, double AeShortfall)>();
@@ -157,7 +157,7 @@ namespace Models.CLEM.Activities
             amountToDo = 0;
             amountToSkip = 0;
             IEnumerable<Ruminant> herd = GetIndividuals<Ruminant>(GetRuminantHerdSelectionStyle.NotMarkedForSale).Where(a => (a.Location ?? "") != "");
-            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd, Structure);
+            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd);
             numberToDo = uniqueIndividuals?.Count() ?? 0;
 
             int monthsToAssess = 0;

@@ -39,8 +39,8 @@ namespace Models.CLEM.Groupings
 
         private void GetAllLabourGroupsAvailable()
         {
-            var zone = Structure.FindParent<Zone>(recurse: true);
-            groupsAvailable = Structure.FindChildren<LabourGroup>(relativeTo: zone, recurse: true).Where(a => a.Enabled);
+            var zone = Node.FindParent<Zone>(recurse: true);
+            groupsAvailable = zone.Node.FindChildren<LabourGroup>(recurse: true).Where(a => a.Enabled);
         }
 
         private List<string> GetAllLabourGroupNames()

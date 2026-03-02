@@ -20,7 +20,7 @@ public class GrazeFoodStoreFertilityLimiterSummary : DescriptiveSummaryProviderB
         var model = ModelTyped;
         if (model is null) return;
 
-        bool timerpresent = model.Structure.FindChildren<ActivityTimerMonthRange>().Any();
+        bool timerpresent = model.Node.FindChildren<ActivityTimerMonthRange>().Any();
         var parentPasture = model.Parent as GrazeFoodStoreType;
 
         generator.AddBlockWithText($"The nitrogen content of new pasture will be reduced by {generator.DisplaySummaryValueSnippet(model.NitrogenReduction, warnZero:true, errorString:"Not Set")} if:");

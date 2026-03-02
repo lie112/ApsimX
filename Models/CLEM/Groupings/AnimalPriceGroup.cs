@@ -82,7 +82,7 @@ namespace Models.CLEM.Groupings
         public ResourcePriceChangeDetails LastPriceChange { get; set; }
 
         /// <inheritdoc/>
-        public IResourceType Resource { get { return Structure.FindParent<IResourceType>(recurse: true); } }
+        public IResourceType Resource { get { return Node.FindParent<IResourceType>(recurse: true); } }
 
         /// <inheritdoc/>
         public event EventHandler PriceChangeOccurred;

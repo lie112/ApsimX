@@ -86,9 +86,9 @@ namespace Models.CLEM.Resources
             id = 1;
             Herd = new List<Ruminant>();
             PurchaseIndividuals = new List<Ruminant>();
-            RuminantGrowActivity = Structure.FindAll<IRuminantActivityGrow>().Where(a => (a as CLEMActivityBase).ActivityEnabled).FirstOrDefault();
+            RuminantGrowActivity = Node.FindAll<IRuminantActivityGrow>().Where(a => (a as CLEMActivityBase).ActivityEnabled).FirstOrDefault();
 
-            foreach (RuminantType rType in Structure.FindChildren<RuminantType>())
+            foreach (RuminantType rType in Node.FindChildren<RuminantType>())
                 rType.Parameters.Initialise(rType);
 
             // check for big erros and stop after initialisation
@@ -98,14 +98,14 @@ namespace Models.CLEM.Resources
                 string warn = $"[r={Name}] requires at least one [a=RuminantActivityGrow_____] to manage growth and aging of individuals.";
                 Warnings.CheckAndWrite(warn, Summary, this, MessageType.Error);
             }
-            if (Structure.FindAll<IRuminantActivityGrow>().Where(a => (a as CLEMModel).Enabled).Count() > 1)
+            if (Node.FindAll<IRuminantActivityGrow>().Where(a => (a as CLEMModel).Enabled).Count() > 1)
             {
                 string warn = $"Only one [a=RuminantActivityGrow_____] activity is permitted in the simulation";
                 string warnfull = $"{warn}{Environment.NewLine}CLEM does not support using different growth models in a simulation even if filtered by herds or breeds. Ensure a single growth component is enabled (ActivityEnabled property or Disable in UI tree)";
                 Warnings.CheckAndWrite(warn, Summary, this, MessageType.Error, warnfull);
             }
 
-            if (!Structure.FindAll<RuminantActivityDeath>().Any())
+            if (!Node.FindAll<RuminantActivityDeath>().Any())
             {
                 // check that a death activity is present for the herd if ruminant types are present.
                 string warn = $"[r={Name}] requires at least one [a=RuminantActivityDeath] to manage death and remove individuals that died.{Environment.NewLine}No individuals will be removed from this simulation even if they have beed identified to have died.";
@@ -332,9 +332,9 @@ namespace Models.CLEM.Resources
                     catNames.Add("All");
                     break;
                 case RuminantTransactionsGroupingStyle.ByPriceGroup:
-                    var animalPricing = Structure.FindChildren<AnimalPricing>(relativeTo: ruminantType).FirstOrDefault();
+                    var animalPricing = ruminantType.Node.FindChildren<AnimalPricing>().FirstOrDefault();
                     if (animalPricing != null)
-                        catNames.AddRange(Structure.FindChildren<AnimalPriceGroup>(relativeTo: animalPricing).Select(a => a.Name));
+                        catNames.AddRange(animalPricing.Node.FindChildren<AnimalPriceGroup>().Select(a => a.Name));
                     break;
                 case RuminantTransactionsGroupingStyle.ByClass:
                     catNames.AddRange(Enum.GetNames(typeof(RuminantClass)));

@@ -16,7 +16,7 @@ public class RuminantParametersGrowPFSummary : RuminantParametersSummaryBase<Rum
     /// <inheritdoc/>
     public override bool IsNeeded()
     {
-        var component = ModelTyped.Structure.Find<RuminantActivityGrowPF>();
+        var component = ModelTyped.Node.Find<RuminantActivityGrowPF>();
         if (component is null || component.Enabled == false)
         {
             return false;

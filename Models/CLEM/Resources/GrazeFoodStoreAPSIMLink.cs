@@ -1,3 +1,4 @@
+using APSIM.Core;
 using Models.CLEM.Activities;
 using Models.CLEM.Interfaces;
 using Models.Core;
@@ -22,8 +23,11 @@ namespace Models.CLEM.Resources
     [Description("This resource represents a link to an APSIM paddock with forages")]
     [HelpUri(@"Content/Features/Resources/Graze food store/GrazeFoodStoreAPSIMLink.htm")]
     [ModelAssociations(associatedModels: new Type[] { typeof(RuminantParametersGrazing) }, associationStyles: new ModelAssociationStyle[] { ModelAssociationStyle.DescendentOfRuminantType })]
-    public class GrazeFoodStoreAPSIMLink : CLEMResourceTypeBase, IResourceWithTransactionType, IResourceType, IFeed, IGrazeFoodStoreType, IValidatableObject
+    public class GrazeFoodStoreAPSIMLink : CLEMResourceTypeBase, IResourceWithTransactionType, IResourceType, IFeed, IGrazeFoodStoreType, IValidatableObject, IStructureDependency
     {
+        /// <inheritdoc/>
+        public IStructure Structure { get; set; }
+
         //[Link]
         //private readonly CLEMEvents events = null;
         private double biomassAddedThisYear;

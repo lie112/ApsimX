@@ -104,7 +104,7 @@ namespace Models.CLEM.Activities
 
             filterGroups = GetCompanionModelsByIdentifier<LabourFeedGroup>(true, false);
 
-            ResourcesHolder resourcesHolder = Structure.Find<ResourcesHolder>();
+            ResourcesHolder resourcesHolder = Node.Find<ResourcesHolder>();
             Labour labour = resourcesHolder.FindResource<Labour>();
             if (labour != null)
             {
@@ -126,10 +126,10 @@ namespace Models.CLEM.Activities
                 return population;
             }
             // check that no filters will filter all groups otherwise return all accounting for any sorting or reduced takes
-            var emptyFilters = filters.Where(a => a.Structure.FindChildren<Filter>(relativeTo: a).Any() == false);
+            var emptyFilters = filters.Where(a => a.Node.FindChildren<Filter>().Any() == false);
             if (emptyFilters.Any())
             {
-                foreach (var empty in emptyFilters.Where(a => a.Structure.FindChildren<ISort>(relativeTo: a).Any() || a.Structure.FindChildren<TakeFromFiltered>(relativeTo: a).Any()))
+                foreach (var empty in emptyFilters.Where(a => a.Node.FindChildren<ISort>().Any() || a.Node.FindChildren<TakeFromFiltered>().Any()))
                 {
                     population = empty.Filter(population);
                 }

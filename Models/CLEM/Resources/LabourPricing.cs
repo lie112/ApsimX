@@ -26,11 +26,11 @@ namespace Models.CLEM.Resources
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (!Structure.FindChildren<LabourPriceGroup>(relativeTo: this).Any())
+            if (!Node.FindChildren<LabourPriceGroup>().Any())
             {
                 yield return new ValidationResult($"No [LabourPriceGroups] have been provided for [r={Name}].\r\nAdd [LabourPriceGroups] to include labour pricing.", new string[] { "Labour pricing" });
             }
-            else if (Structure.FindChildren<LabourPriceGroup>(relativeTo: this).Count(a => a.Value == 0) > 0)
+            else if (Node.FindChildren<LabourPriceGroup>().Count(a => a.Value == 0) > 0)
             {
                 yield return new ValidationResult($"No price [Value] has been set for some of the [LabourPriceGroup] in [r={Name}]\r\nThese will not result in price calculations and can be deleted.", new string[] { "Labour pricing" });
             }

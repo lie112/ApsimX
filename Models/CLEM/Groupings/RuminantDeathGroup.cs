@@ -78,7 +78,7 @@ namespace Models.CLEM.Groupings
         {
             var results = new List<ValidationResult>();
 
-            if (Structure.Find<RuminantParametersGrow>() is null)
+            if (Node.Find<RuminantParametersGrow>() is null)
             {
                 string[] memberNames = new string[] { "Missing Ruminant.Grow parameters" };
                 results.Add(new ValidationResult($"[a=RuminantActivityDeath] requires parameters defined in [r=Ruminant.Parameters.RuminantParametersGrow].{Environment.NewLine}Ensure [r=Ruminant.Parameters.RuminantParametersGrow] is present and has the parameters for your breed provided..", memberNames));

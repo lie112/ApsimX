@@ -38,7 +38,7 @@ public class PastureActivityManageSummary : DescriptiveSummaryProviderBase<Pastu
         Land parentLand = null;
         if (ModelTyped.LandTypeNameToUse != null && ModelTyped.LandTypeNameToUse != "")
         {
-            parentLand = ModelTyped.Structure.Find<Land>(ModelTyped.LandTypeNameToUse.Split('.')[0]);
+            parentLand = ModelTyped.Node.Find<Land>(ModelTyped.LandTypeNameToUse.Split('.')[0]);
         }
 
         if (ModelTyped.UseAreaAvailable)

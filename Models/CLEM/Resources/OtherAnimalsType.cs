@@ -78,11 +78,11 @@ namespace Models.CLEM.Resources
         private void OnCLEMInitialiseResource(object sender, EventArgs e)
         {
             // locate age to weight relationship
-            AgeWeightRelationship = Structure.FindChildren<Relationship>().FirstOrDefault(a => a.Identifier == "Age to weight");
+            AgeWeightRelationship = Node.FindChildren<Relationship>().FirstOrDefault(a => a.Identifier == "Age to weight");
 
-            PriceList = Structure.FindChildren<AnimalPricing>().FirstOrDefault();
+            PriceList = Node.FindChild<AnimalPricing>();
             // Components are not permanently modifed during simulation so no need for clone: PriceList = Apsim.Clone(this.FindAllChildren<AnimalPricing>().FirstOrDefault()) as AnimalPricing;
-            priceGroups = Structure.FindChildren<AnimalPriceGroup>().Cast<AnimalPriceGroup>().ToList();
+            priceGroups = Node.FindChildren<AnimalPriceGroup>().ToList();
 
             Initialise();
         }
@@ -90,7 +90,7 @@ namespace Models.CLEM.Resources
         /// <summary>
         /// Method to return the selected cohorts based on filtering by multiple cohort groups
         /// </summary>
-        /// <returns>An IEnumberable list of selected cohorts.</returns>
+        /// <returns>An IEnumerable list of selected cohorts.</returns>
         public IEnumerable<OtherAnimalsTypeCohort> GetCohorts(IEnumerable<OtherAnimalsGroup> filtergroups, bool includeTakeFilters)
         {
             if (filtergroups == null || filtergroups.Any() == false)
@@ -117,8 +117,8 @@ namespace Models.CLEM.Resources
         /// Method to return the selected cohorts based on a single filter group
         /// </summary>
         /// <param name="filter">An OtherAnimalsGroup to apply as filter</param>
-        /// <param name="includeTakeFilters">Switch to specifiy if TakeFilters are to be mannaged</param>
-        /// <param name="applyPreviouslyConsidered">Switch to specifiy if the considered state of cohort is used</param>
+        /// <param name="includeTakeFilters">Switch to specify if TakeFilters are to be managed</param>
+        /// <param name="applyPreviouslyConsidered">Switch to specify if the considered state of cohort is used</param>
         /// <returns>An IEnumerable list of available cohorts</returns>
         public IEnumerable<OtherAnimalsTypeCohort> GetCohorts(OtherAnimalsGroup filter, bool includeTakeFilters, bool applyPreviouslyConsidered = false)
         {
@@ -126,7 +126,7 @@ namespace Models.CLEM.Resources
 
             if (includeTakeFilters && filteredCohorts.Any())
             {
-                ApplyTakeFilters(filteredCohorts.Where(a => (applyPreviouslyConsidered ? (a.Considered == false) : true)), filter, Structure);
+                ApplyTakeFilters(filteredCohorts.Where(a => (applyPreviouslyConsidered ? (a.Considered == false) : true)), filter);
             }
 
             foreach (var cohort in filteredCohorts)
@@ -139,15 +139,15 @@ namespace Models.CLEM.Resources
             }
         }
 
-        private static void ApplyTakeFilters(IEnumerable<OtherAnimalsTypeCohort> filteredCohorts, OtherAnimalsGroup filter, IStructure structure)
+        private static void ApplyTakeFilters(IEnumerable<OtherAnimalsTypeCohort> filteredCohorts, OtherAnimalsGroup filter)
         {
-            if(!structure.FindChildren<TakeFromFiltered>(relativeTo: filter).Any())
+            if(!filter.Node.FindChildren<TakeFromFiltered>().Any())
             {
                 return;
             }
 
             // adjust the numbers based on take and skip filters
-            IEnumerable<TakeFromFiltered> takeFilters = structure.FindChildren<TakeFromFiltered>(relativeTo: filter);
+            IEnumerable<TakeFromFiltered> takeFilters = filter.Node.FindChildren<TakeFromFiltered>();
             foreach (var takeFilter in takeFilters)
             {
                 int totalNumber = filteredCohorts.Sum(a => a.AdjustedNumber);

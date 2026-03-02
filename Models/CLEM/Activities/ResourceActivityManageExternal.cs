@@ -102,10 +102,10 @@ namespace Models.CLEM.Activities
                 bankAccount = Resources.FindResourceType<Finance, FinanceType>(this, AccountName, OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.Ignore);
             }
 
-            Model parentZone = Structure.FindParents<Zone>().FirstOrDefault();
+            Model parentZone = Node.FindParents<Zone>().FirstOrDefault();
             if (parentZone != null)
             {
-                fileResource = Structure.FindChild<FileResource>(ResourceDataReader, recurse: true);
+                fileResource = parentZone.Node.FindChild<FileResource>(ResourceDataReader, recurse: true);
             }
 
             resourcesForMonth = new List<(IResourceType resource, double amount)>();
@@ -131,7 +131,7 @@ namespace Models.CLEM.Activities
                         }
                         else
                         {
-                            resource = Structure.FindChildren<IResourceType>(resourceName, relativeTo: Resources, recurse: true).FirstOrDefault();
+                            resource = Resources.Node.FindChildren<IResourceType>(resourceName, recurse: true).FirstOrDefault();
                         }
 
                         switch (resource.GetType().ToString())
@@ -153,13 +153,13 @@ namespace Models.CLEM.Activities
 
                         if (resource != null)
                         {
-                            var matchingResources = Structure.FindChildren<ResourceActivityExternalMultiplier>().Where(a => a.ResourceTypeName == (resource as CLEMModel).NameWithParent || a.ResourceTypeName == (resource as CLEMModel).Name);
+                            var matchingResources = Node.FindChildren<ResourceActivityExternalMultiplier>().Where(a => a.ResourceTypeName == (resource as CLEMModel).NameWithParent || a.ResourceTypeName == (resource as CLEMModel).Name);
                             if (matchingResources.Count() > 1)
                             {
                                 warn = $"[a={Name}] could not distinguish between multiple occurrences of resource [r={resourceName}] provided by [x={fileResource.Name}] in the local [r=ResourcesHolder]\r\nEnsure all resource names are unique across stores, or use ResourceStore.ResourceType notation to specify resources in the input file";
                                 Warnings.CheckAndWrite(warn, Summary, this, MessageType.Error);
                             }
-                            resourceMultiplier = Structure.FindChildren<ResourceActivityExternalMultiplier>().Where(a => a.ResourceTypeName == (resource as CLEMModel).NameWithParent || a.ResourceTypeName == (resource as CLEMModel).Name).FirstOrDefault()?.Multiplier ?? 1;
+                            resourceMultiplier = Node.FindChildren<ResourceActivityExternalMultiplier>().Where(a => a.ResourceTypeName == (resource as CLEMModel).NameWithParent || a.ResourceTypeName == (resource as CLEMModel).Name).FirstOrDefault()?.Multiplier ?? 1;
                         }
                         else
                         {

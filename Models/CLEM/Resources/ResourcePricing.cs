@@ -85,7 +85,7 @@ namespace Models.CLEM.Resources
 
         /// <inheritdoc/>
         [JsonIgnore]
-        public IResourceType Resource { get { return Structure.FindParent<IResourceType>(recurse: true); } }
+        public IResourceType Resource { get { return Node.FindParent<IResourceType>(recurse: true); } }
 
         /// <inheritdoc/>
         [JsonIgnore]

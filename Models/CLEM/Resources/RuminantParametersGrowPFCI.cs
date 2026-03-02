@@ -287,22 +287,22 @@ namespace Models.CLEM.Resources
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (Structure.Find<RuminantActivityGrowPF>() is not null || Structure.Find<RuminantActivityGrowSCA07>() is not null)
+            if (Node.Find<RuminantActivityGrowPF>() is not null || Node.Find<RuminantActivityGrowSCA07>() is not null)
             {
                 ISummary summary = null;
                 RuminantType ruminantType = null;
                 // condition-based intake reduction turned off
                 if (RelativeConditionEffect_CI20 == 1.0)
                 {
-                    ruminantType = Structure.FindParent<RuminantType>(recurse: true);
-                    summary = Structure.Find<Summary>();
+                    ruminantType = Node.FindParent<RuminantType>(recurse: true);
+                    summary = Node.Find<Summary>();
                     summary.WriteMessage(this, $"Ruminant intake reduction based on high condition is disabled for [{ruminantType?.Name??"Unknown"}].{Environment.NewLine}To allow this functionality set [Parameters].[GrowPF].[GrowPF CI].RelativeConditionEffect_CI20 to a value greater than [1] (default 1.5)", MessageType.Warning);
                 }
                 // intake reduced by quality of feed turned off
                 if (IgnoreFeedQualityIntakeAdjustment)
                 {
-                    ruminantType ??= Structure.FindParent<RuminantType>(recurse: true);
-                    summary ??= Structure.Find<Summary>();
+                    ruminantType ??= Node.FindParent<RuminantType>(recurse: true);
+                    summary ??= Node.Find<Summary>();
                     summary.WriteMessage(this, $"Ruminant intake reduction based on intake quality is disabled for [{ruminantType?.Name ?? "Unknown"}].{Environment.NewLine}To allow this functionality set [Parameters].[GrowPF].[GrowPF CI].IgnoreFeedQualityIntakeAdustment to [False]", MessageType.Warning);
                 }
             }

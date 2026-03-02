@@ -101,7 +101,7 @@ namespace Models.CLEM.Activities
         [EventSubscribe("CLEMInitialise")]
         private void OnCLEMInitialiseSetAttributes(object sender, EventArgs e)
         {
-            attributeList = Structure.FindChildren<ISetAttribute>(recurse: true).ToList();
+            attributeList = Node.FindChildren<ISetAttribute>(recurse: true).ToList();
         }
 
         /// <summary>An event handler to allow us to initialise ourselves.</summary>
@@ -114,7 +114,7 @@ namespace Models.CLEM.Activities
             InitialiseHerd(false, true);
             filterGroups = GetCompanionModelsByIdentifier<RuminantGroup>(false, true);
 
-            milkingTimer = Structure.FindChild<ActivityTimerBreedForMilking>();
+            milkingTimer = Node.FindChild<ActivityTimerBreedForMilking>();
 
             if (!TimingExists)
             {
@@ -146,7 +146,7 @@ namespace Models.CLEM.Activities
             numberToDo = 0;
             numberToSkip = 0;
             IEnumerable<RuminantFemale> herd = GetBreeders();
-            uniqueIndividuals = GetUniqueIndividuals<RuminantFemale>(filterGroups, herd, Structure);
+            uniqueIndividuals = GetUniqueIndividuals<RuminantFemale>(filterGroups, herd);
             numberToDo = uniqueIndividuals?.Count() ?? 0;
             amountToDo = numberToDo;
 

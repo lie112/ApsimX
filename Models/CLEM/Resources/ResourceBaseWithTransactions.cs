@@ -56,7 +56,7 @@ namespace Models.CLEM.Resources
         [EventSubscribe("Commencing")]
         protected void OnSimulationCommencing(object sender, EventArgs e)
         {
-            foreach (IResourceWithTransactionType childModel in Structure.FindChildren<IResourceWithTransactionType>())
+            foreach (IResourceWithTransactionType childModel in Node.FindChildren<IResourceWithTransactionType>())
                 childModel.TransactionOccurred += Resource_TransactionOccurred;
         }
 
@@ -66,7 +66,7 @@ namespace Models.CLEM.Resources
         [EventSubscribe("Completed")]
         protected void OnSimulationCompleted(object sender, EventArgs e)
         {
-            foreach (IResourceWithTransactionType childModel in Structure.FindChildren<IResourceWithTransactionType>())
+            foreach (IResourceWithTransactionType childModel in Node.FindChildren<IResourceWithTransactionType>())
                 childModel.TransactionOccurred -= Resource_TransactionOccurred;
         }
 

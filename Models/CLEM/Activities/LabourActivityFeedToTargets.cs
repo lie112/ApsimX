@@ -93,16 +93,16 @@ namespace Models.CLEM.Activities
             food = Resources.FindResourceGroup<HumanFoodStore>();
             bankAccount = Resources.FindResourceType<Finance, FinanceType>(this, AccountName, OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.Ignore);
 
-            Market = Structure.FindParent<ResourcesHolder>(relativeTo: food, recurse: true).FoundMarket;
+            Market = food.Node.FindParent<ResourcesHolder>(recurse: true).FoundMarket;
 
             resourcesHolder = base.Resources;
             // if market is present point to market to find the resource
             if (Market != null)
-                resourcesHolder = Structure.FindChild<ResourcesHolder>(relativeTo: Market);
+                resourcesHolder = Market.Node.FindChild<ResourcesHolder>();
 
             // set the food store linked in any TargetPurchase if target proportion set > 0
             // check that all purchase resources have transmutation or recalculate the proportion
-            var targetPurchases = Structure.FindChildren<LabourActivityFeedTargetPurchase>().Where(a => a.TargetProportion > 0).ToList();
+            var targetPurchases = Node.FindChildren<LabourActivityFeedTargetPurchase>().Where(a => a.TargetProportion > 0).ToList();
             if (targetPurchases.Any())
             {
                 double checkPropAvailable = 0;
@@ -171,7 +171,7 @@ namespace Models.CLEM.Activities
             double otherIntake = this.DailyIntakeOtherSources * aE * daysInMonth;
             otherIntake += peopleList.Sum(a => a.GetAmountConsumed());
 
-            List<LabourActivityFeedTarget> labourActivityFeedTargets = Structure.FindChildren<LabourActivityFeedTarget>().ToList();
+            List<LabourActivityFeedTarget> labourActivityFeedTargets = Node.FindChildren<LabourActivityFeedTarget>().ToList();
 
             // determine targets
             foreach (LabourActivityFeedTarget target in labourActivityFeedTargets)
@@ -205,12 +205,12 @@ namespace Models.CLEM.Activities
             }
 
             // get max months before spoiling of all food stored (will be zero for non perishable food)
-            int maxFoodAge = Structure.FindChildren<HumanFoodStoreType>(relativeTo: food).Max(a => a.Pools.Select(b => a.UseByAge - b.Age).DefaultIfEmpty(0).Max());
+            int maxFoodAge = food.Node.FindChildren<HumanFoodStoreType>().Max(a => a.Pools.Select(b => a.UseByAge - b.Age).DefaultIfEmpty(0).Max());
 
             // create list of all food parcels
             List<HumanFoodParcel> foodParcels = new List<HumanFoodParcel>();
 
-            foreach (HumanFoodStoreType foodStore in Structure.FindChildren<HumanFoodStoreType>(relativeTo: food).ToList())
+            foreach (HumanFoodStoreType foodStore in food.Node.FindChildren<HumanFoodStoreType>(relativeTo: food).ToList())
             {
                 foreach (HumanFoodStorePool pool in foodStore.Pools.Where(a => a.Amount > 0))
                 {
@@ -239,7 +239,7 @@ namespace Models.CLEM.Activities
                 HumanFoodStore food = resources.FindResourceGroup<HumanFoodStore>();
                 if (food != null)
                 {
-                    foreach (HumanFoodStoreType foodStore in Structure.FindChildren<HumanFoodStoreType>(relativeTo: food))
+                    foreach (HumanFoodStoreType foodStore in food.Node.FindChildren<HumanFoodStoreType>())
                     {
                         foreach (HumanFoodStorePool pool in foodStore.Pools.Where(a => a.Amount > 0))
                         {
@@ -403,7 +403,7 @@ namespace Models.CLEM.Activities
                     metricNeeded = Math.Max(0, (targetUnfilled.Target - targetUnfilled.CurrentAchieved));
                     double amountToFull = intakeLimit - intake;
 
-                    foreach (LabourActivityFeedTargetPurchase purchase in Structure.FindChildren<LabourActivityFeedTargetPurchase>())
+                    foreach (LabourActivityFeedTargetPurchase purchase in Node.FindChildren<LabourActivityFeedTargetPurchase>())
                     {
                         HumanFoodStoreType foodType = purchase.FoodStore;
                         if (purchase.ProportionToPurchase > 0 && foodType != null && (foodType.TransmutationDefined & intake < intakeLimit))
@@ -505,7 +505,7 @@ namespace Models.CLEM.Activities
                             labour.FeedToTargetIntake += amount;
                         }
                 }
-                if (Structure.FindChildren<LabourActivityFeedTarget>().Where(a => !a.TargetAchieved).Any())
+                if (Node.FindChildren<LabourActivityFeedTarget>().Where(a => !a.TargetAchieved).Any())
                     this.Status = ActivityStatus.Partial;
                 else
                     this.Status = ActivityStatus.Success;
@@ -536,7 +536,7 @@ namespace Models.CLEM.Activities
                 // determine AEs to be fed - NOTE does not account for aging in reserve calculation.
                 double aE = people.AdultEquivalents(IncludeHiredLabour);
 
-                LabourActivityFeedTarget feedTarget = Structure.FindChildren<LabourActivityFeedTarget>().FirstOrDefault();
+                LabourActivityFeedTarget feedTarget = Node.FindChildren<LabourActivityFeedTarget>().FirstOrDefault();
 
                 for (int i = 1; i <= MonthsStorage; i++)
                 {
@@ -547,7 +547,7 @@ namespace Models.CLEM.Activities
 
                 double amountStored = 0; // reset here to make store based on all food types
 
-                foreach (HumanFoodStoreType foodStore in Structure.FindChildren<HumanFoodStoreType>(relativeTo: food).ToList())
+                foreach (HumanFoodStoreType foodStore in food.Node.FindChildren<HumanFoodStoreType>().ToList())
                 {
                     // double amountStored = 0; reset here to make store based on each food type
                     double amountAvailable = foodStore.Pools.Sum(a => a.Amount);
@@ -661,7 +661,7 @@ namespace Models.CLEM.Activities
             }
 
             // check that at least one target has been provided.
-            if (Structure.FindChildren<LabourActivityFeedTarget>().Count() == 0)
+            if (Node.FindChildren<LabourActivityFeedTarget>().Count() == 0)
             {
                 string[] memberNames = new string[] { "LabourActivityFeedToTargets" };
                 results.Add(new ValidationResult(String.Format("At least one [LabourActivityFeedTarget] component is required below the feed activity [{0}]", this.Name), memberNames));

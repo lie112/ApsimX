@@ -13,7 +13,7 @@ internal class RuminantParametersMethaneCharmleySummary : RuminantParametersSumm
     /// <inheritdoc/>
     public override bool IsNeeded()
     {
-        var charmParams = ModelTyped.Structure.FindAll<RuminantParametersMethaneCharmleySummary>();
+        var charmParams = ModelTyped.Node.FindAll<RuminantParametersMethaneCharmleySummary>();
         if (charmParams is null)
         {
             return false;

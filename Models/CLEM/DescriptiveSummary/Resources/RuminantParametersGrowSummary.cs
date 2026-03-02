@@ -13,7 +13,7 @@ internal class RuminantParametersGrowSummary : RuminantParametersSummaryBase<Rum
     /// <inheritdoc/>
     public override bool IsNeeded()
     {
-        var component = ModelTyped.Structure.Find<RuminantActivityGrow>();
+        var component = ModelTyped.Node.Find<RuminantActivityGrow>();
         if (component is null || component.Enabled == false)
         {
             return false;

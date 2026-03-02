@@ -620,7 +620,7 @@ namespace Models.CLEM.Resources
             {
                 ResourceType = Name
             };
-            grazeFoodStoreFertilityLimiter = Structure.FindChildren<GrazeFoodStoreFertilityLimiter>().FirstOrDefault();
+            grazeFoodStoreFertilityLimiter = Node.FindChild<GrazeFoodStoreFertilityLimiter>();
         }
 
         /// <summary>An event handler to allow us to make checks after resources and activities initialised.</summary>

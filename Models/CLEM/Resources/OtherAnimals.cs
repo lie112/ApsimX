@@ -35,9 +35,9 @@ namespace Models.CLEM.Resources
             IEnumerable<OtherAnimalsType> otherAnimalTypes;
 
             if(filtergroups != null && filtergroups.Any())
-                otherAnimalTypes = Structure.FindChildren<OtherAnimalsType>().Where(a => filtergroups.Any(b => b.SelectedOtherAnimalsType == a));
+                otherAnimalTypes = Node.FindChildren<OtherAnimalsType>().Where(a => filtergroups.Any(b => b.SelectedOtherAnimalsType == a));
             else
-                otherAnimalTypes = Structure.FindChildren<OtherAnimalsType>();
+                otherAnimalTypes = Node.FindChildren<OtherAnimalsType>();
 
             foreach (OtherAnimalsType otherAnimalType in otherAnimalTypes)
             {

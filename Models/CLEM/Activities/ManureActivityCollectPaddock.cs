@@ -55,7 +55,7 @@ namespace Models.CLEM.Activities
         private void OnCLEMInitialiseActivity(object sender, EventArgs e)
         {
             manureStore = Resources.FindResourceType<ProductStore, ProductStoreTypeManure>(this, "Manure", OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.ReportErrorAndStop);
-            limiter = ActivityCarryLimiter.Locate(this, Structure);
+            limiter = ActivityCarryLimiter.Locate(this);
         }
 
         /// <inheritdoc/>

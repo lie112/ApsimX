@@ -79,7 +79,7 @@ public class RuminantParametersHolderSummary : DescriptiveSummaryProviderBase<Ru
         [
             new ChildComponentGroup(
                 id: "parameters",
-                models: model.Structure.FindChildren<ISubParameters>(recurse: true).Cast<IModel>(),
+                models: model.Node.FindChildren<ISubParameters>(recurse: true).Cast<IModel>(),
                 childType: typeof(ISubParameters),
                 missing: "",
                 include: false

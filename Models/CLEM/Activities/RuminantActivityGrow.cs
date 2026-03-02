@@ -613,7 +613,7 @@ namespace Models.CLEM.Activities
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             // check parameters are available for all ruminants.
-            foreach (var item in Structure.FindAll<RuminantType>().Where(a => a.Parameters.Grow is null))
+            foreach (var item in Node.FindAll<RuminantType>().Where(a => a.Parameters.Grow is null))
             {
                 yield return new ValidationResult($"No [RuminantParametersGrow] parameters are provided for [{item.NameWithParent}]", new string[] { "RuminantParametersGrow" });
             }

@@ -33,7 +33,7 @@ namespace Models.CLEM.Groupings
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (Structure.FindChildren<CLEMModel>(relativeTo: Parent as INodeModel).Last() != this)
+            if (Parent.Node.FindChildren<CLEMModel>().Last() != this)
             {
                 yield return new ValidationResult($"The sort item [f={Name}] must be the last component in its group", new string[] { "RandomSort" });
             }

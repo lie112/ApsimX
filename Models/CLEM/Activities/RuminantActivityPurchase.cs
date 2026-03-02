@@ -117,11 +117,11 @@ namespace Models.CLEM.Activities
             // check for managed paddocks and warn if animals placed in yards.
             if (grazeStore == "")
             {
-                var ah = Structure.Find<ActivitiesHolder>();
+                var ah = Node.Find<ActivitiesHolder>();
                 Summary.WriteMessage(this, String.Format("Trade animals purchased by [a={0}] are currently placed in [Not specified - general yards] while a managed pasture is available. These animals will not graze until moved and will require feeding while in yards.\r\nSolution: Set the [GrazeFoodStore to place purchase in] located in the properties [General].[PastureDetails]", this.Name), MessageType.Warning);
             }
 
-            numberToStock = Structure.FindChildren<Relationship>().Where(a => a.Identifier == "Number to stock vs pasture").FirstOrDefault();
+            numberToStock = Node.FindChildren<Relationship>().Where(a => a.Identifier == "Number to stock vs pasture").FirstOrDefault();
             if(numberToStock != null)
             {
                 if (grazeStore != "")
@@ -195,13 +195,13 @@ namespace Models.CLEM.Activities
             {
                 int purchased = 0;
 
-                foreach (SpecifyRuminant purchaseSpecific in Structure.FindChildren<SpecifyRuminant>())
+                foreach (SpecifyRuminant purchaseSpecific in Node.FindChildren<SpecifyRuminant>())
                 {
                     int number = Convert.ToInt32(Math.Ceiling(numberToDo - numberToSkip * purchaseSpecific.Proportion));
                     if (number > 0)
                     {
-                        RuminantTypeCohort purchasetype = Structure.FindChild<RuminantTypeCohort>(relativeTo: purchaseSpecific);
-                        var purchaseIndividuals = purchasetype.CreateIndividuals(number, Structure.FindChildren<ISetAttribute>(relativeTo: purchasetype).ToList(), events.TimeStepStart, rumTypeToUse, false);
+                        RuminantTypeCohort purchasetype = purchaseSpecific.Node.FindChild<RuminantTypeCohort>();
+                        var purchaseIndividuals = purchasetype.CreateIndividuals(number, purchasetype.Node.FindChildren<ISetAttribute>().ToList(), events.TimeStepStart, rumTypeToUse, false);
 
                         foreach (var ind in purchaseIndividuals)
                         {
@@ -226,7 +226,7 @@ namespace Models.CLEM.Activities
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             // check that a RuminantTypeCohort is supplied to identify trade individuals.
-            var specifyRuminants = Structure.FindChildren<SpecifyRuminant>();
+            var specifyRuminants = Node.FindChildren<SpecifyRuminant>();
             if (specifyRuminants.Count() == 0)
             {
                 string[] memberNames = new string[] { "PurchaseDetails" };
@@ -237,7 +237,7 @@ namespace Models.CLEM.Activities
                 foreach (SpecifyRuminant specRumItem in specifyRuminants)
                 {
                     // get Cohort
-                    var items = Structure.FindChildren<RuminantTypeCohort>(relativeTo: specRumItem);
+                    var items = specRumItem.Node.FindChildren<RuminantTypeCohort>();
                     if (items.Count() > 1)
                     {
                         string[] memberNames = new string[] { "SpecifyRuminant cohort" };
@@ -250,7 +250,7 @@ namespace Models.CLEM.Activities
                     }
                 }
             }
-            if (Structure.FindChildren<Relationship>().Where(a => a.Identifier == "Number to stock vs pasture").Any())
+            if (Node.FindChildren<Relationship>().Where(a => a.Identifier == "Number to stock vs pasture").Any())
             {
                 double cumulativeProp = specifyRuminants.Select(a => a.Proportion).Sum();
                 if(MathUtilities.FloatsAreEqual(cumulativeProp, 1.0) == false)
@@ -262,7 +262,7 @@ namespace Models.CLEM.Activities
 
             if (GrazeFoodStoreName.Contains("."))
             {
-                ResourcesHolder resHolder = Structure.Find<ResourcesHolder>();
+                ResourcesHolder resHolder = Node.Find<ResourcesHolder>();
                 if (resHolder is null || resHolder.FindResourceType<GrazeFoodStore, GrazeFoodStoreType>(this, GrazeFoodStoreName) is null)
                 {
                     string[] memberNames = new string[] { "Location is not valid" };

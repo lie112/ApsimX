@@ -184,9 +184,9 @@ namespace Models.CLEM
             TransmuteResourceTypeName = ResourceGroup.Name;
             shortfallPacketSize = (Parent as Transmutation).TransmutationPacketSize;
             shortfallWholePackets = (Parent as Transmutation).UseWholePackets;
-            groupings = Structure.FindChildren<RuminantGroup>(relativeTo: ResourceGroup);
+            groupings = ResourceGroup.Node.FindChildren<RuminantGroup>();
 
-            var shortfallResourceType = Structure.FindParent<IResourceType>(relativeTo: this, recurse: true);
+            var shortfallResourceType = Node.FindParent<IResourceType>(recurse: true);
             if (shortfallResourceType != null && TransmuteStyle == TransmuteStyle.UsePricing)
             {
                 shortfallPricing = shortfallResourceType.Price(PurchaseOrSalePricingStyleType.Purchase);
@@ -204,7 +204,7 @@ namespace Models.CLEM
         {
             if (ResourceGroup is null)
             {
-                IResourceType parentResource = Structure.FindParent<CLEMResourceTypeBase>(recurse: true) as IResourceType;
+                IResourceType parentResource = Node.FindParent<CLEMResourceTypeBase>(recurse: true) as IResourceType;
                 yield return new ValidationResult($"No [r=Ruminant] resource was found for a herd-based transmute [r={Name}] for [r={parentResource.Name}]", new string[] { "Ruminant herd resource" });
             }
         }

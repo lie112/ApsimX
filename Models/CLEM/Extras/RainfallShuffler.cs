@@ -92,7 +92,7 @@ namespace Models.CLEM
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (Structure.Find<RandomNumberGenerator>() is null)
+            if (Node.Find<RandomNumberGenerator>() is null)
             {
                 yield return new ValidationResult($"The [RainfallShuffler] component [{NameWithParent}] requires access to a [RandomNumberGenerator] component in the simulation tree", new string[] { "Missing random number generator" });
             }

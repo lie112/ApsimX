@@ -89,7 +89,7 @@ namespace Models.CLEM
         /// </summary>
         public void ClearRules()
         {
-            foreach (Filter filter in Structure.FindChildren<Filter>())
+            foreach (Filter filter in Node.FindChildren<Filter>())
             {
                 filter.ClearRule();
             }
@@ -130,7 +130,7 @@ namespace Models.CLEM
             }
 
             properties =  properties.OrderBy(x => x.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
-            foreach (Filter filter in Structure.FindChildren<Filter>())
+            foreach (Filter filter in Node.FindChildren<Filter>())
             {
                 filter.Initialise();
                 if (includeBuildRules)
@@ -139,7 +139,7 @@ namespace Models.CLEM
                 }
             }
 
-            sortList = Structure.FindChildren<ISort>();
+            sortList = Node.FindChildren<ISort>();
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace Models.CLEM
                 throw new NullReferenceException("Cannot filter a null object");
             }
 
-            filterRules ??= Structure.FindChildren<Filter>().Select(filter => filter.Rule);
+            filterRules ??= Node.FindChildren<Filter>().Select(filter => filter.Rule);
 
             var filtered = filterRules.Any() ? source.Where(item => filterRules.All(rule => rule is null ? false : rule(item))) : source;
 
@@ -186,7 +186,7 @@ namespace Models.CLEM
             }
 
             // do all takes and skips
-            foreach (var take in Structure.FindChildren<TakeFromFiltered>())
+            foreach (var take in Node.FindChildren<TakeFromFiltered>())
             {
                 int number = 0;
                 switch (take.TakeStyle)
@@ -239,7 +239,7 @@ namespace Models.CLEM
                 throw new NullReferenceException("Cannot filter a null object");
             }
 
-            filterRules ??= Structure.FindChildren<Filter>().Select(filter => filter.Rule);
+            filterRules ??= Node.FindChildren<Filter>().Select(filter => filter.Rule);
 
             return filterRules.All(rule => rule is null ? false : rule(item));
         }

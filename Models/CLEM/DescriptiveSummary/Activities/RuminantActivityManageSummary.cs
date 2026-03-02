@@ -67,8 +67,8 @@ namespace Models.CLEM.DescriptiveSummary
             generator.AddBlockWithText($"Breeding females");
 
             // does controlled mating exist in simulation
-            var zone = ModelTyped.Structure.FindParent<Zone>(recurse: true);
-            bool cmate = ModelTyped.Structure.FindChild<RuminantActivityControlledMating>(relativeTo: zone, recurse: true) != null;
+            var zone = ModelTyped.Node.FindParent<Zone>(recurse: true);
+            bool cmate = zone.Node.FindChild<RuminantActivityControlledMating>(recurse: true) != null;
 
             string output = "";
             using (generator.OpenBlock("activitycontentlight", id: $"{ModelTyped.Name}_fembreeders"))

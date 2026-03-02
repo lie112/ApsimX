@@ -80,7 +80,7 @@ namespace Models.CLEM
                 }
                 else
                 {
-                    Simulation simulation = Structure.FindParent<Simulation>(recurse: true);
+                    Simulation simulation = Node.FindParent<Simulation>(recurse: true);
                     if (simulation != null)
                     {
                         return PathUtilities.GetAbsolutePath(this.FileName, simulation.FileName);
@@ -121,10 +121,10 @@ namespace Models.CLEM
 
             // get all pricing component names
             // put in a list that provides a link to the object so we can use this to set values
-            var resources = Structure.FindParents<Zone>().FirstOrDefault();
+            var resources = Node.FindParent<Zone>();
             if (resources != null)
             {
-                pricingComponentsFound = Structure.FindChildren<IResourcePricing>(relativeTo: resources, recurse: true).ToList();
+                pricingComponentsFound = resources.Node.FindChildren<IResourcePricing>(recurse: true).ToList();
             }
 
             DataView dataView = new DataView(GetAllData())

@@ -63,17 +63,16 @@ namespace Models.CLEM.Limiters
         /// Method to locate a ActivityCutAndCarryLimiter from a specified model
         /// </summary>
         /// <param name="model">Model looking for limiter</param>
-        /// <param name="structure">Structure instance</param>
         /// <returns></returns>
-        public static ActivityCarryLimiter Locate(IModel model, IStructure structure)
+        public static ActivityCarryLimiter Locate(IModel model)
         {
             // search children
-            ActivityCarryLimiter limiterFound = structure.FindChildren<ActivityCarryLimiter>(relativeTo: model as INodeModel).Cast<ActivityCarryLimiter>().FirstOrDefault();
+            ActivityCarryLimiter limiterFound = model.Node.FindChildren<ActivityCarryLimiter>().Cast<ActivityCarryLimiter>().FirstOrDefault();
             if (limiterFound == null)
             {
                 if (model.Parent.GetType().IsSubclassOf(typeof(CLEMActivityBase)) || model.Parent.GetType() == typeof(ActivitiesHolder))
                 {
-                    limiterFound = ActivityCarryLimiter.Locate(model.Parent, structure);
+                    limiterFound = ActivityCarryLimiter.Locate(model.Parent);
                 }
             }
             return limiterFound;

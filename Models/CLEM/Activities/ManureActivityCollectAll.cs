@@ -50,7 +50,7 @@ namespace Models.CLEM.Activities
             AllocationStyle = ResourceAllocationStyle.Manual;
 
             manureStore = Resources.FindResourceType<ProductStore, ProductStoreTypeManure>(this, "Manure", OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.ReportErrorAndStop);
-            limiter = ActivityCarryLimiter.Locate(this, Structure);
+            limiter = ActivityCarryLimiter.Locate(this);
         }
 
         /// <inheritdoc/>

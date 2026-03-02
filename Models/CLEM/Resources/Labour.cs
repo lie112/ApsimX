@@ -72,7 +72,7 @@ namespace Models.CLEM.Resources
         [EventSubscribe("CLEMInitialiseResource")]
         private void OnCLEMInitialiseResource(object sender, EventArgs e)
         {
-            availabilityList = Structure.FindChildren<LabourAvailabilityList>().FirstOrDefault();
+            availabilityList = Node.FindChild<LabourAvailabilityList>();
         }
 
         /// <summary>
@@ -124,7 +124,8 @@ namespace Models.CLEM.Resources
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             // Add warning if no individuals defined
-            if (Structure.FindChildren<LabourType>().Any() && Structure.FindChildren<LabourType>().Cast<LabourType>().Sum(a => a.Individuals) == 0)
+            var labourTypes = Node.FindChildren<LabourType>();
+            if (labourTypes.Any() && labourTypes.Sum(a => a.Individuals) == 0)
             {
                 string warningString = "No individuals have been set in any [r=LabourType]\r\nAdd individuals or consider removing or disabling [r=Labour]";
                 if (!warningsNotFound.Contains(warningString))
@@ -145,10 +146,10 @@ namespace Models.CLEM.Resources
         private new void OnSimulationCommencing(object sender, EventArgs e)
         {
             // locate AE relationship
-            adultEquivalentRelationship = Structure.FindChildren<Relationship>().FirstOrDefault(a => a.Identifier == "Adult equivalent");
+            adultEquivalentRelationship = Node.FindChildren<Relationship>().FirstOrDefault(a => a.Identifier == "Adult equivalent");
 
             Items = new List<LabourType>();
-            foreach (LabourType labourChildModel in Structure.FindChildren<LabourType>())
+            foreach (LabourType labourChildModel in Node.FindChildren<LabourType>())
             {
                 //IndividualAttribute att = new() { StoredValue = labourChildModel.Name };
                 if (UseCohorts | labourChildModel.Individuals <= 1)
@@ -164,10 +165,11 @@ namespace Models.CLEM.Resources
                 }
             }
             // clone pricelist so model can modify if needed and not affect initial parameterisation
-            if (Structure.FindChildren<LabourPricing>().Any())
+            var pricing = Node.FindChildren<LabourPricing>();
+            if (pricing.Any())
             {
-                PayList = Apsim.Clone(Structure.FindChildren<LabourPricing>().FirstOrDefault());
-                foreach (LabourPriceGroup item in Structure.FindChildren<LabourPriceGroup>(relativeTo: PayList))
+                PayList = Apsim.Clone(pricing.FirstOrDefault());
+                foreach (LabourPriceGroup item in Node.FindChildren<LabourPriceGroup>(relativeTo: PayList))
                 {
                     item.InitialiseFilters();
                 }
@@ -202,7 +204,7 @@ namespace Models.CLEM.Resources
         [EventSubscribe("Completed")]
         private new void OnSimulationCompleted(object sender, EventArgs e)
         {
-            foreach (LabourType childModel in Structure.FindChildren<LabourType>())
+            foreach (LabourType childModel in Node.FindChildren<LabourType>())
             {
                 childModel.TransactionOccurred -= Resource_TransactionOccurred;
             }
@@ -270,7 +272,7 @@ namespace Models.CLEM.Resources
             // if not assign new value
             if (labour.LabourAvailability == null)
             {
-                foreach (var availItem in Structure.FindChildren<ILabourSpecificationItem>(relativeTo: availabilityList))
+                foreach (var availItem in availabilityList.Node.FindChildren<ILabourSpecificationItem>())
                 {
                     if (availItem is IFilterGroup group && group.Filter(checkList).Any())
                     {
@@ -343,7 +345,7 @@ namespace Models.CLEM.Resources
             if (PricingAvailable)
             {
                 // search through RuminantPriceGroups for first match with desired purchase or sale flag
-                foreach (LabourPriceGroup item in Structure.FindChildren<LabourPriceGroup>(relativeTo: PayList))
+                foreach (LabourPriceGroup item in PayList.Node.FindChildren<LabourPriceGroup>())
                 {
                     if (item.Filter(ind))
                     {
@@ -379,7 +381,7 @@ namespace Models.CLEM.Resources
                 //find first pricing entry matching specific criteria
                 LabourPriceGroup matchIndividual = null;
                 LabourPriceGroup matchCriteria = null;
-                foreach (LabourPriceGroup priceGroup in Structure.FindChildren<LabourPriceGroup>(relativeTo: PayList))
+                foreach (LabourPriceGroup priceGroup in PayList.Node.FindChildren<LabourPriceGroup>())
                 {
                     if (priceGroup.Filter(ind) && matchIndividual == null)
                     {
@@ -387,11 +389,11 @@ namespace Models.CLEM.Resources
                     }
 
                     // check that pricing item meets the specified criteria.
-                    var items = Structure.FindChildren<FilterByProperty>(relativeTo: priceGroup)
+                    var items = priceGroup.Node.FindChildren<FilterByProperty>()
                         .Where(f => priceGroup.GetProperty(f.PropertyOfIndividual).First() == property)
                         .Where(f => f.Value.ToString().ToUpper() == value.ToUpper());
 
-                    var suitableFilters = Structure.FindChildren<FilterByProperty>(relativeTo: priceGroup)
+                    var suitableFilters = priceGroup.Node.FindChildren<FilterByProperty>()
                         .Where(a => (priceGroup.GetProperty(a.PropertyOfIndividual).First() == property) &
                         (
                             (a.Operator == System.Linq.Expressions.ExpressionType.Equal && a.Value.ToString().ToUpper() == value.ToUpper()) |

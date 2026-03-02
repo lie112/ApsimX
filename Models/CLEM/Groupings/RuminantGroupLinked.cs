@@ -51,8 +51,8 @@ namespace Models.CLEM.Groupings
 
         private void GetAllRuminantGroupsAvailable()
         {
-            var zone = Structure.FindParent<Zone>(recurse: true);
-            groupsAvailable = Structure.FindChildren<RuminantGroup>(relativeTo: zone, recurse: true).Where(a => a.Enabled);
+            var zone = Node.FindParent<Zone>(recurse: true);
+            groupsAvailable = zone.Node.FindChildren<RuminantGroup>(recurse: true).Where(a => a.Enabled);
         }
         private List<string> GetAllRuminantGroupNames()
         {

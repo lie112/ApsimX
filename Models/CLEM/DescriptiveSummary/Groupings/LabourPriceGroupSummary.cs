@@ -84,7 +84,7 @@ public class LabourPriceGroupSummary : DescriptiveSummaryProviderBase<LabourPric
         {
             generator.OpenBlock("childgroupborder filteritems clearfix", "", id: "labourPriceGroup_filters");
         }
-        if (cm.Structure.FindChildren<Filter>().Any() == false)
+        if (cm.Node.FindChildren<Filter>().Any() == false)
         {
             generator.AddBlockWithText("All individuals", "entryValue filterItem floatLeft");
         }

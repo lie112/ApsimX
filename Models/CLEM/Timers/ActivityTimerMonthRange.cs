@@ -90,7 +90,7 @@ namespace Models.CLEM.Timers
         [EventSubscribe("StartOfSimulation")]
         private void OnCLEMInitialiseActivity(object sender, EventArgs e)
         {
-            sequenceTimerList = Structure.FindChildren<ActivityTimerSequence>();
+            sequenceTimerList = Node.FindChildren<ActivityTimerSequence>();
             startMonth = (int)StartMonth;
             endMonth = (int)EndMonth;
         }

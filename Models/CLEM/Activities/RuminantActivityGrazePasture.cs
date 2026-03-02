@@ -88,7 +88,7 @@ namespace Models.CLEM.Activities
 
             if (Parent is not RuminantActivityGrazeAll)
             {
-                var activities = Structure.FindParent<Simulation>(recurse: true);
+                var activities = Node.FindParent<Simulation>(recurse: true);
                 var apsimEvents = new Events(activities);
                 apsimEvents.ReconnectEvents("CLEMEvents", "CLEMGetResourcesRequired");
             }
@@ -100,19 +100,19 @@ namespace Models.CLEM.Activities
         public void SetupDynamicChildren()
         {
             //InitialiseHerd(true, true);
-            HerdResource = Structure.Find<RuminantHerd>();
+            HerdResource = Node.Find<RuminantHerd>();
             if (HerdResource is null)
                 return;
 
             GrazeFoodStoreModel = Resources.FindResourceType<GrazeFoodStore, IGrazeFoodStoreType>(this, GrazeFoodStoreTypeName, OnMissingResourceActionTypes.ReportErrorAndStop, OnMissingResourceActionTypes.ReportErrorAndStop);
 
             Guid nextUID = ActivitiesHolder.AddToGuID(UniqueID, 2);
-            foreach (RuminantType herdType in Structure.FindChildren<RuminantType>(relativeTo: HerdResource))
+            foreach (RuminantType herdType in HerdResource.Node.FindChildren<RuminantType>())
             {
-                if (Structure.FindChildren<RuminantActivityGrazePastureHerd>().Where(a => a.RuminantTypeModel != herdType).Any() == false)
+                if (Node.FindChildren<RuminantActivityGrazePastureHerd>().Where(a => a.RuminantTypeModel != herdType).Any() == false)
                 {
                     var newGrazePastureHerd = new RuminantActivityGrazePastureHerd(this, herdType, TransactionCategory, nextUID);
-                    Structure.AddChild(newGrazePastureHerd);
+                    Node.AddChild(newGrazePastureHerd);
                     Links links = new();
                     links.Resolve(newGrazePastureHerd as IModel, true, recurse: false);
 
@@ -132,7 +132,7 @@ namespace Models.CLEM.Activities
             // if calling the getResources from child PastureHerd components they will only run once.
 
             double totalNeeded = 0;
-            IEnumerable<RuminantActivityGrazePastureHerd> grazeHerdChildren = Structure.FindChildren<RuminantActivityGrazePastureHerd>();
+            IEnumerable<RuminantActivityGrazePastureHerd> grazeHerdChildren = Node.FindChildren<RuminantActivityGrazePastureHerd>();
             foreach (RuminantActivityGrazePastureHerd item in grazeHerdChildren)
             {
                 item.ResourceRequestList = null;
@@ -177,7 +177,7 @@ namespace Models.CLEM.Activities
         {
             if (GrazeFoodStoreTypeName.Contains("."))
             {
-                ResourcesHolder resHolder = Structure.Find<ResourcesHolder>();
+                ResourcesHolder resHolder = Node.Find<ResourcesHolder>();
                 if (resHolder is null || resHolder.FindResourceType<GrazeFoodStore, IGrazeFoodStoreType>(this, GrazeFoodStoreTypeName) is null)
                 {
                     yield return new ValidationResult($"The location defined for grazing [r={GrazeFoodStoreTypeName}] in [a={Name}] is not found.{Environment.NewLine}Ensure [r=GrazeFoodStore] is present and the [GrazeFoodStoreType] is present", new string[] { "Location is not valid" });

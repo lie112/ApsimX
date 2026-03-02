@@ -39,7 +39,7 @@ namespace Models.CLEM.Resources
         {
             Items = new List<GrazeFoodStoreType>();
 
-            foreach (IModel childModel in Structure.FindChildren<IModel>())
+            foreach (IModel childModel in Node.FindChildren<IModel>())
             {
                 switch (childModel.GetType().ToString())
                 {
@@ -60,7 +60,7 @@ namespace Models.CLEM.Resources
         [EventSubscribe("Completed")]
         private new void OnSimulationCompleted(object sender, EventArgs e)
         {
-            foreach (GrazeFoodStoreType childModel in Structure.FindChildren<GrazeFoodStoreType>())
+            foreach (GrazeFoodStoreType childModel in Node.FindChildren<GrazeFoodStoreType>())
             {
                 childModel.EcologicalIndicatorsCalculated -= Resource_EcologicalIndicatorsCalculated;
             }

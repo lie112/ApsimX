@@ -55,7 +55,7 @@ namespace Models.CLEM.Resources
         {
             get
             {
-                return Structure.FindChildren<Transmutation>().Where(a => a.Enabled).Any();
+                return Node.FindChildren<Transmutation>().Where(a => a.Enabled).Any();
             }
         }
 
@@ -65,7 +65,7 @@ namespace Models.CLEM.Resources
         [EventSubscribe("Commencing")]
         protected void OnSetupTypeBase(object sender, EventArgs e)
         {
-            parent = Structure.FindParent<ResourceBaseWithTransactions>(recurse: true);
+            parent = Node.FindParent<ResourceBaseWithTransactions>(recurse: true);
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Models.CLEM.Resources
         public bool PricingExists(PurchaseOrSalePricingStyleType priceType)
         {
             // find pricing that is ok;
-            return Structure.FindChildren<ResourcePricing>().Where(a => a.Enabled & ((a as ResourcePricing).PurchaseOrSale == PurchaseOrSalePricingStyleType.Both | (a as ResourcePricing).PurchaseOrSale == priceType) && (a as ResourcePricing).TimingOK).FirstOrDefault() != null;
+            return Node.FindChildren<ResourcePricing>().Where(a => a.Enabled & ((a as ResourcePricing).PurchaseOrSale == PurchaseOrSalePricingStyleType.Both | (a as ResourcePricing).PurchaseOrSale == priceType) && (a as ResourcePricing).TimingOK).FirstOrDefault() != null;
         }
 
         /// <summary>
@@ -97,17 +97,17 @@ namespace Models.CLEM.Resources
             // if market exists look for market pricing to override local pricing as all transactions will be through the market
             if ((Parent.Parent as ResourcesHolder).FoundMarket is not null && MarketStoreExists)
             {
-                price = Structure.FindChildren<ResourcePricing>(relativeTo: EquivalentMarketStore).FirstOrDefault(a => a.Enabled && (a.PurchaseOrSale == PurchaseOrSalePricingStyleType.Both || a.PurchaseOrSale == priceType) && a.TimingOK);
+                price = EquivalentMarketStore.Node.FindChildren<ResourcePricing>().FirstOrDefault(a => a.Enabled && (a.PurchaseOrSale == PurchaseOrSalePricingStyleType.Both || a.PurchaseOrSale == priceType) && a.TimingOK);
             }
             else
             {
-                price = Structure.FindChildren<ResourcePricing>().FirstOrDefault(a => (a.PurchaseOrSale == PurchaseOrSalePricingStyleType.Both | a.PurchaseOrSale == priceType) && a.TimingOK);
+                price = Node.FindChildren<ResourcePricing>().FirstOrDefault(a => (a.PurchaseOrSale == PurchaseOrSalePricingStyleType.Both | a.PurchaseOrSale == priceType) && a.TimingOK);
             }
 
             if (price == null)
             {
                 // does simulation have finance
-                if (Structure.FindParent<ResourcesHolder>(recurse: true).FindResourceGroup<Finance>() != null)
+                if (Node.FindParent<ResourcesHolder>(recurse: true).FindResourceGroup<Finance>() != null)
                 {
                     string market = "";
                     if((Parent.Parent as ResourcesHolder).MarketPresent)
@@ -122,7 +122,7 @@ namespace Models.CLEM.Resources
                         }
                     }
                     string warn = $"No pricing is available for [r={market}{Parent.Name}.{Name}]";
-                    if (clock != null && Structure.FindChildren<ResourcePricing>().Any())
+                    if (clock != null && Node.FindChildren<ResourcePricing>().Any())
                     {
                         warn += " in month [" + clock.Today.ToString("MM yyyy") + "]";
                     }
@@ -178,7 +178,7 @@ namespace Models.CLEM.Resources
                 }
                 else
                 {
-                    if (Structure.FindParent<ResourcesHolder>(recurse: true).FindResourceGroup<Finance>() != null && amount != 0)
+                    if (Node.FindParent<ResourcesHolder>(recurse: true).FindResourceGroup<Finance>() != null && amount != 0)
                     {
                         string market = "";
                         if ((Parent.Parent as ResourcesHolder).MarketPresent)
@@ -206,7 +206,7 @@ namespace Models.CLEM.Resources
             }
             else
             {
-                ResourceUnitsConverter converter = Structure.FindChildren<ResourceUnitsConverter>().Where(a => string.Compare(a.Name, converterName, true) == 0).FirstOrDefault() as ResourceUnitsConverter;
+                ResourceUnitsConverter converter = Node.FindChildren<ResourceUnitsConverter>().Where(a => string.Compare(a.Name, converterName, true) == 0).FirstOrDefault() as ResourceUnitsConverter;
                 if (converter != null)
                 {
                     double result = amount;
@@ -246,7 +246,7 @@ namespace Models.CLEM.Resources
         /// <returns>Value to report</returns>
         public double ConversionFactor(string converterName)
         {
-            ResourceUnitsConverter converter = Structure.FindChildren<ResourceUnitsConverter>().Where(a => a.Name.ToLower() == converterName.ToLower()).FirstOrDefault() as ResourceUnitsConverter;
+            ResourceUnitsConverter converter = Node.FindChildren<ResourceUnitsConverter>().Where(a => a.Name.ToLower() == converterName.ToLower()).FirstOrDefault();
             if (converter is null)
             {
                 return 0;
@@ -281,7 +281,7 @@ namespace Models.CLEM.Resources
                 // haven't already found a market store
                 if (EquivalentMarketStore is null)
                 {
-                    ResourcesHolder holder = Structure.FindParent<ResourcesHolder>(recurse: true);
+                    ResourcesHolder holder = Node.FindParent<ResourcesHolder>(recurse: true);
                     // is there a market
                     if (holder != null && holder.FoundMarket != null)
                     {

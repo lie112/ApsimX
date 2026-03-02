@@ -82,11 +82,11 @@ namespace Models.CLEM.Reporting
         [EventSubscribe("SubscribeToEvents")]
         private void OnConnectToEvents(object sender, EventArgs args)
         {
-            Report report = Structure.FindChild<Report>();
+            Report report = Node.FindChild<Report>();
             if (report is null)
             {
                 report = new Report();
-                Structure.AddChild(report);
+                Node.AddChild(report);
             }
             report.Name = Name;
             report.VariableNames = new string[] {
@@ -144,12 +144,12 @@ namespace Models.CLEM.Reporting
                 string[] memberNames = new string[] { "Missing resource" };
                 yield return new ValidationResult($"No ruminant herd resource could be found for [ReportRuminantAttributeSummary] [{this.Name}]", memberNames);
             }
-            if (!Structure.FindChildren<RuminantGroup>().Any())
+            if (!Node.FindChildren<RuminantGroup>().Any())
             {
                 string[] memberNames = new string[] { "Missing ruminant filter group" };
                 yield return new ValidationResult($"The [ReportRuminantAttributeSummary] [{Name}] requires at least one filter group to identify individuals to report", memberNames);
             }
-            if (!Structure.FindChildren<Report>().Where(a => a.Name == this.Name).Any())
+            if (!Node.FindChildren<Report>().Where(a => a.Name == this.Name).Any())
             {
                 string[] memberNames = new string[] { "Missing report" };
                 yield return new ValidationResult($"The [ReportRuminantAttributeSummary] [{Name}] requires an [APSIM.Report] as a child named [{Name}] to process output. Add a new report below this activity.", memberNames);
@@ -179,7 +179,7 @@ namespace Models.CLEM.Reporting
         private void ReportHerd()
         {
             // warning if the same individual is in multiple filter groups it will be considered more than once
-            foreach (var fgroup in Structure.FindChildren<RuminantGroup>())
+            foreach (var fgroup in Node.FindChildren<RuminantGroup>())
             {
                 ListStatistics listStatistics = SummariseAttribute(AttributeTag, true, fgroup);
                 if (listStatistics != null)

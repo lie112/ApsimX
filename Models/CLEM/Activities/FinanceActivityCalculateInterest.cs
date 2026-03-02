@@ -46,7 +46,7 @@ namespace Models.CLEM.Activities
             if (finance != null)
             {
                 // make interest payments on bank accounts
-                foreach (FinanceType account in Structure.FindChildren<FinanceType>(relativeTo: finance))
+                foreach (FinanceType account in finance.Node.FindChildren<FinanceType>())
                 {
                     if (MathUtilities.IsPositive(account.Balance))
                     {

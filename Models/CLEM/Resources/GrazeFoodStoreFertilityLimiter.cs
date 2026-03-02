@@ -59,7 +59,7 @@ namespace Models.CLEM.Resources
         private void OnSimulationCommencing(object sender, EventArgs e)
         {
             parentPasture = this.Parent as GrazeFoodStoreType;
-            timingPresent = Structure.FindChildren<ActivityTimerMonthRange>().Any();
+            timingPresent = Node.FindChildren<ActivityTimerMonthRange>().Any();
         }
 
         /// <summary>

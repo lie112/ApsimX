@@ -119,7 +119,7 @@ namespace Models.CLEM.Activities
             numberToDo = 0;
             numberToSkip = 0;
             IEnumerable<Ruminant> herd = GetIndividuals<Ruminant>(GetRuminantHerdSelectionStyle.AllOnFarm).Where(a => a.Attributes.Exists(TagLabel) == (ApplicationStyle != TagApplicationStyle.Add));
-            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd, Structure);
+            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd);
             numberToDo = uniqueIndividuals?.Count() ?? 0;
 
             // provide updated measure for companion models

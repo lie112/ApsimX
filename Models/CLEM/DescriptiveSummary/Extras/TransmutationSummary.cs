@@ -45,14 +45,14 @@ public class TransmutationSummary: DescriptiveSummaryProviderBase<Transmutation>
     {
         using StringWriter htmlWriter = new();
 
-        var pricing = ModelTyped.Structure.FindChildren<ITransmute>().Where(a => a.TransmuteStyle == TransmuteStyle.UsePricing);
-        var direct = ModelTyped.Structure.FindChildren<ITransmute>().Where(a => a.TransmuteStyle == TransmuteStyle.Direct);
+        var pricing = ModelTyped.Node.FindChildren<ITransmute>().Where(a => a.TransmuteStyle == TransmuteStyle.UsePricing);
+        var direct = ModelTyped.Node.FindChildren<ITransmute>().Where(a => a.TransmuteStyle == TransmuteStyle.Direct);
 
         htmlWriter.Write($"The following resources (B) will transmute ");
         if (pricing.Any())
         {
             htmlWriter.Write($"using the resource purchase price ");
-            var transmuteResourcePrice = ((ModelTyped.Structure.FindParent<ResourcesHolder>(recurse: true)).FindResourceType<ResourceBaseWithTransactions, IResourceType>(ModelTyped, ModelTyped.ResourceInShortfall, OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.Ignore))?.Price(PurchaseOrSalePricingStyleType.Purchase);
+            var transmuteResourcePrice = ((ModelTyped.Node.FindParent<ResourcesHolder>(recurse: true)).FindResourceType<ResourceBaseWithTransactions, IResourceType>(ModelTyped, ModelTyped.ResourceInShortfall, OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.Ignore))?.Price(PurchaseOrSalePricingStyleType.Purchase);
             if (transmuteResourcePrice != null)
             {
                 htmlWriter.Write("found");

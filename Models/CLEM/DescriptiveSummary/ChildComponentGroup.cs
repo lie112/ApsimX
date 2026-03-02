@@ -73,7 +73,7 @@ public class ChildComponentGroup
         Introduction = introduction;
         ChildType = childType;
 
-        SelectedModels = model.Structure
+        SelectedModels = model.Node
             .FindChildren<IModel>()
             .Where(a => ChildType != null && ChildType.IsAssignableFrom(a.GetType()));
         if (missing == "default")

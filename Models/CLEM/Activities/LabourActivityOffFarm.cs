@@ -97,7 +97,7 @@ namespace Models.CLEM.Activities
                 Summary.WriteMessage(this, $"No bank account has been specified for [a={Name}]. No funds will be earned!", MessageType.Warning);
             }
 
-            var labour = Structure.FindChildren<LabourRequirement>();
+            var labour = Node.FindChildren<LabourRequirement>();
             // get check labour required
             if (labour == null)
             {

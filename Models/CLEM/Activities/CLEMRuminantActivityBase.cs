@@ -127,9 +127,8 @@ namespace Models.CLEM.Activities
         /// </summary>
         /// <param name="filters">The filter groups to include</param>
         /// <param name="herd">the individuals to filter</param>
-        /// <param name="structure">Structure instance</param>
         /// <returns>A list of unique individuals</returns>
-        public static IEnumerable<T> GetUniqueIndividuals<T>(IEnumerable<RuminantGroup> filters, IEnumerable<T> herd, IStructure structure) where T: Ruminant
+        public static IEnumerable<T> GetUniqueIndividuals<T>(IEnumerable<RuminantGroup> filters, IEnumerable<T> herd) where T: Ruminant
         {
             // no filters provided
             if (!filters.Any())
@@ -137,11 +136,11 @@ namespace Models.CLEM.Activities
                 return herd;
             }
             // check that no filters will filter all groups otherwise return all
-            var emptyFilters = filters.Where(a => structure.FindChildren<Filter>(relativeTo: a).Any() == false);
+            var emptyFilters = filters.Where(a => a.Node.FindChildren<Filter>().Any() == false);
             if (emptyFilters.Any())
             {
                 // account for any sorting or reduced takes
-                foreach (var empty in emptyFilters.Where(a => structure.FindChildren<ISort>(relativeTo: a).Any() || structure.FindChildren<TakeFromFiltered>(relativeTo: a).Any()))
+                foreach (var empty in emptyFilters.Where(a => a.Node.FindChildren<ISort>().Any() || a.Node.FindChildren<TakeFromFiltered>().Any()))
                 {
                     herd = empty.Filter(herd);
                 }

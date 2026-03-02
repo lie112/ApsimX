@@ -159,7 +159,7 @@ namespace Models.CLEM.Resources
         [EventSubscribe("CLEMInitialiseResource")]
         private void OnCLEMInitialiseResource(object sender, EventArgs e)
         {
-            setPreviousConception = Structure.FindChild<SetPreviousConception>();
+            setPreviousConception = Node.FindChild<SetPreviousConception>();
 
             if (ManagedPastureName is not null && ManagedPastureName != "" && ManagedPastureName.StartsWith("Not specified") == false)
             {
@@ -181,7 +181,7 @@ namespace Models.CLEM.Resources
             if (initialAttributes != null)
                 localAttributes.AddRange(initialAttributes);
             // Add any attributes defined at the cohort level
-            localAttributes.AddRange(Structure.FindChildren<ISetAttribute>().ToList());
+            localAttributes.AddRange(Node.FindChildren<ISetAttribute>().ToList());
 
             return CreateIndividuals(Convert.ToInt32(this.Number, CultureInfo.InvariantCulture), localAttributes, date, ruminantType);
         }
@@ -202,10 +202,10 @@ namespace Models.CLEM.Resources
 
             List<Ruminant> individuals = new();
             initialAttributes ??= new();
-            setPreviousConception = Structure.FindChild<SetPreviousConception>();
+            setPreviousConception = Node.FindChild<SetPreviousConception>();
 
             RuminantType parent = ruminantType;
-            parent ??= Structure.FindParent<RuminantType>(recurse: true);
+            parent ??= Node.FindParent<RuminantType>(recurse: true);
 
             for (int i = 1; i <= number; i++)
             {
@@ -230,8 +230,8 @@ namespace Models.CLEM.Resources
             }
 
             // add any mandatory attributes to the list on the ruminant type
-            foreach (var mattrib in initialAttributes.Where(a => a.Mandatory))
-                parent.AddMandatoryAttribute(mattrib.AttributeName);
+            foreach (var mandAttrib in initialAttributes.Where(a => a.Mandatory))
+                parent.AddMandatoryAttribute(mandAttrib.AttributeName);
 
             return individuals;
         }

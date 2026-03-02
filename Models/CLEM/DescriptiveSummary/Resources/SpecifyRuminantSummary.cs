@@ -45,7 +45,7 @@ public class SpecifyRuminantSummary : DescriptiveSummaryProviderBase<SpecifyRumi
         if (model is null) return;
 
         string extra = "";
-        bool cohortFound = model.Structure?.FindChildren<RuminantTypeCohort>(relativeTo: model).Any() ?? false;
+        bool cohortFound = ModelTyped.Node.FindChildren<RuminantTypeCohort>().Any();
 
         if (cohortFound)
         {

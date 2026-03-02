@@ -219,14 +219,14 @@ namespace Models.CLEM.Activities
             // number provided by the parent for trucking
             parentNumberToDo = parentBuySellActivity.IndividualsToBeTrucked?.Count() ?? 0;
 
-            individualsToBeTrucked = GetUniqueIndividuals<Ruminant>(filterGroups.OfType<RuminantGroup>(), parentBuySellActivity.IndividualsToBeTrucked, Structure).ToList();
+            individualsToBeTrucked = GetUniqueIndividuals<Ruminant>(filterGroups.OfType<RuminantGroup>(), parentBuySellActivity.IndividualsToBeTrucked).ToList();
             numberToDo = individualsToBeTrucked?.Count() ?? 0;
 
             // work out how many can be trucked and return to parent of not trucked for next trucking settings if available.
 
             truckDetails = EstimateTrucking();
 
-            foreach (var iChild in Structure.FindChildren<IActivityCompanionModel>().OfType<CLEMActivityBase>())
+            foreach (var iChild in Node.FindChildren<IActivityCompanionModel>().OfType<CLEMActivityBase>())
             {
                 iChild.Status = (Status == ActivityStatus.Skipped)? ActivityStatus.NotNeeded: ((parentNumberToDo > 0) ? ActivityStatus.NotNeeded : ActivityStatus.NoTask);
             }

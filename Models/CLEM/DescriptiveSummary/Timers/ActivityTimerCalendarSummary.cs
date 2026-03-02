@@ -15,8 +15,8 @@ public class ActivityTimerCalendarSummary : TimerSummaryBase<ActivityTimerCalend
     /// <inheritdoc/>
     public override void BuildSummary()
     {
-        Clock clock = ModelTyped.Structure.Find<Clock>();
-        CLEMEvents clemEvents = ModelTyped.Structure.Find<CLEMEvents>();
+        Clock clock = ModelTyped.Node.Find<Clock>();
+        CLEMEvents clemEvents = ModelTyped.Node.Find<CLEMEvents>();
 
         if (clock is null || clemEvents is null)
         {
@@ -32,7 +32,7 @@ public class ActivityTimerCalendarSummary : TimerSummaryBase<ActivityTimerCalend
             return;
         }
 
-        TimerRange range = new(clemEvents, ModelTyped.StartDetails, ModelTyped.EndDetails, ModelTyped.RepeatInterval, ModelTyped.WholeTimeStepMustBeInRange, ModelTyped.Structure.FindChildren<ActivityTimerSequence>(), true);
+        TimerRange range = new(clemEvents, ModelTyped.StartDetails, ModelTyped.EndDetails, ModelTyped.RepeatInterval, ModelTyped.WholeTimeStepMustBeInRange, ModelTyped.Node.FindChildren<ActivityTimerSequence>(), true);
 
         using StringWriter htmlWriter = new();
 

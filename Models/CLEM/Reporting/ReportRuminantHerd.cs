@@ -112,7 +112,7 @@ namespace Models.CLEM.Reporting
             {
                 yield return new ValidationResult($"No ruminant herd resource could be found for [ReportRuminantHerd] [{this.Name}]", new string[] { "Missing resource" });
             }
-            if (!Structure.FindChildren<RuminantGroup>().Any())
+            if (!Node.FindChildren<RuminantGroup>().Any())
             {
                 yield return new ValidationResult($"The [ReportRuminantHerd] [{this.Name}] requires at least one filter group to identify individuals to report", new string[] { "Missing ruminant filter group" });
             }
@@ -143,7 +143,7 @@ namespace Models.CLEM.Reporting
             // warning if the same individual is in multiple filter groups it will be entered more than once
 
             // get all filter groups below.
-            foreach (var fgroup in Structure.FindChildren<RuminantGroup>())
+            foreach (var fgroup in Node.FindChildren<RuminantGroup>())
             {
                 foreach (Ruminant item in fgroup.Filter(ruminantHerd?.Herd))
                 {

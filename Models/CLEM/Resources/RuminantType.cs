@@ -105,25 +105,25 @@ namespace Models.CLEM.Resources
             parentHerd = this.Parent as RuminantHerd;
 
             // clone pricelist so model can modify if needed and not affect initial parameterisation
-            if (Structure.FindChildren<AnimalPricing>().Count() > 0)
+            if (Node.FindChildren<AnimalPricing>().Count() > 0)
             {
-                PriceList = Structure.FindChildren<AnimalPricing>().FirstOrDefault();
+                PriceList = Node.FindChildren<AnimalPricing>().FirstOrDefault();
                 // Components are not permanently modified during simulation so no need for clone: PriceList = Apsim.Clone(this.FindAllChildren<AnimalPricing>().FirstOrDefault()) as AnimalPricing;
 
-                priceGroups = Structure.FindChildren<AnimalPriceGroup>(relativeTo: PriceList).Cast<AnimalPriceGroup>().ToList();
+                priceGroups = PriceList.Node.FindChildren<AnimalPriceGroup>().ToList();
             }
 
             // get conception parameters and rate calculation method
-            ConceptionModel = ConceptionModel = Structure.FindChildren<Model>().Where(a => typeof(IConceptionModel).IsAssignableFrom(a.GetType())).Cast<IConceptionModel>().FirstOrDefault();
+            ConceptionModel = Node.FindChild<IConceptionModel>();
 
 
-            if (ParentHerd.RuminantGrowActivity.IncludeFatAndProtein && Structure.FindChildren<RuminantTypeCohort>(recurse: true).Any(a => a.Validate(null).Any()))
+            if (ParentHerd.RuminantGrowActivity.IncludeFatAndProtein && Node.FindChildren<RuminantTypeCohort>(recurse: true).Any(a => a.Validate(null).Any()))
             {
                 // found issues with setting fat and protein so abort and allow the user to fix.
                 return;
             }
 
-            foreach (RuminantInitialCohorts ruminantCohorts in Structure.FindChildren<RuminantInitialCohorts>())
+            foreach (RuminantInitialCohorts ruminantCohorts in Node.FindChildren<RuminantInitialCohorts>())
                 foreach (var ind in ruminantCohorts.CreateIndividuals(events?.Clock.Start ?? default))
                 {
                     ind.SaleFlag = HerdChangeReason.InitialHerd;
@@ -199,7 +199,7 @@ namespace Models.CLEM.Resources
             // IS THIS NEEDED OR DOES IT CORRUPT THE MODEL OUTCOMES
 
             var remainingFemales = parentHerd.Herd.OfType<RuminantFemale>().Where(a => a.DateOfLastConception == default && !a.IsLactating && !a.IsPregnant && (a.AgeInDays > a.Parameters.Details.EstimatedAgeAtMaturityFemale + a.Parameters.General.GestationLength.InDays & a.Weight.HighestAttained >= a.Parameters.General.MinimumSizeForMaturityFemale * a.Weight.StandardReferenceWeight));
-            if (remainingFemales.Any() == false || Structure.FindAll<RuminantParametersBreeding>().Any() == false)
+            if (remainingFemales.Any() == false || Node.FindAll<RuminantParametersBreeding>().Any() == false)
             {
                 return;
             }
@@ -365,7 +365,7 @@ namespace Models.CLEM.Resources
                     AnimalPriceGroup matchIndividual = null;
                     AnimalPriceGroup matchCriteria = null;
 
-                    var priceGroups = Structure.FindChildren<AnimalPriceGroup>(relativeTo: PriceList)
+                    var priceGroups = PriceList.Node.FindChildren<AnimalPriceGroup>()
                         .Where(a => a.PurchaseOrSale == purchaseStyle || a.PurchaseOrSale == PurchaseOrSalePricingStyleType.Both);
 
                     foreach (AnimalPriceGroup priceGroup in priceGroups)
@@ -373,7 +373,7 @@ namespace Models.CLEM.Resources
                         if (priceGroup.Filter(ind) && matchIndividual == null)
                             matchIndividual = priceGroup;
 
-                        var suitableFilters = Structure.FindChildren<FilterByProperty>(relativeTo: priceGroup)
+                        var suitableFilters = priceGroup.Node.FindChildren<FilterByProperty>()
                             .Where(a => (a.PropertyOfIndividual == property) &
                             (
                                 (a.Operator == System.Linq.Expressions.ExpressionType.Equal && a.Value.ToString().ToUpper() == value.ToUpper()) |
@@ -537,23 +537,23 @@ namespace Models.CLEM.Resources
             var results = new List<ValidationResult>();
 
             // ensure at least one conception model is associated
-            int conceptionModelCount = Structure.FindChildren<Model>().Where(a => typeof(IConceptionModel).IsAssignableFrom(a.GetType())).Count();
+            int conceptionModelCount = Node.FindChildren<IConceptionModel>().Count();
             if (conceptionModelCount > 1)
             {
                 string[] memberNames = new string[] { "RuminantType.IConceptionModel" };
                 yield return new ValidationResult($"Only one Conception component is permitted below the Ruminant Type [r={Name}]", memberNames);
             }
-
-            if (Structure.FindChildren<AnimalPricing>().Count() > 1)
+            var pricingModels = Node.FindChildren<AnimalPricing>();
+            if (pricingModels.Count() > 1)
             {
                 string[] memberNames = new string[] { "RuminantType.Pricing" };
                 yield return new ValidationResult($"Only one Animal pricing schedule is permitted within a Ruminant Type [{Name}]", memberNames);
             }
-            else if (Structure.FindChildren<AnimalPricing>().Count() == 1)
+            else if (pricingModels.Count() == 1)
             {
-                AnimalPricing price = Structure.FindChildren<AnimalPricing>().FirstOrDefault() as AnimalPricing;
+                AnimalPricing price = pricingModels.FirstOrDefault();
 
-                if (Structure.FindChildren<AnimalPriceGroup>(relativeTo: price).Count() == 0)
+                if (price.Node.FindChildren<AnimalPriceGroup>().Count() == 0)
                 {
                     string[] memberNames = new string[] { "RuminantType.Pricing.RuminantPriceGroup" };
                     yield return new ValidationResult($"At least one Ruminant Price Group is required under an animal pricing within Ruminant Type [{Name}]", memberNames);

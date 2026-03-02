@@ -48,10 +48,10 @@ public class LabourActivityFeedToTargetsSummary : DescriptiveSummaryProviderBase
         generator.AddBlockWithText($"Hired labour {generator.DisplaySummaryValueSnippet(((ModelTyped.IncludeHiredLabour) ? "is" : "is not"))} included");
 
         // find a market place if present
-        Simulation sim = ModelTyped.Structure.FindParent<Simulation>(recurse: true);
+        Simulation sim = ModelTyped.Node.FindParent<Simulation>(recurse: true);
         if (sim != null)
         {
-            Market marketPlace = ModelTyped.Structure.FindChild<Market>(relativeTo: sim);
+            Market marketPlace = sim.Node.FindChild<Market>();
             if (marketPlace != null)
             {
                 generator.AddBlockWithText($"Food with be bought and sold through the market {generator.DisplaySummaryResourceTypeSnippet(marketPlace.Name)} included");

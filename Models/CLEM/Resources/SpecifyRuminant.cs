@@ -77,7 +77,7 @@ namespace Models.CLEM.Resources
         [EventSubscribe("CLEMInitialiseResource")]
         private void OnCLEMInitialiseResource(object sender, EventArgs e)
         {
-            Details = Structure.FindChildren<RuminantTypeCohort>().FirstOrDefault();
+            Details = Node.FindChild<RuminantTypeCohort>();
             ruminantType = resources.FindResourceType<RuminantHerd, RuminantType>(Parent as CLEMModel, RuminantTypeName, OnMissingResourceActionTypes.ReportErrorAndStop, OnMissingResourceActionTypes.ReportErrorAndStop);
 
             if (Details is not null && ruminantType.Parameters.General is not null)
@@ -99,13 +99,14 @@ namespace Models.CLEM.Resources
                 yield return new ValidationResult("An invalid [r=RuminantType] was specified", new string[] { "Ruminant type" });
             }
 
-            if (Structure.FindChildren<RuminantTypeCohort>().Count() != 1)
+            var cohorts = Node.FindChildren<RuminantTypeCohort>();
+            if (cohorts.Count() != 1)
             {
                 yield return new ValidationResult("A single [r=RuminantTypeCohort] must be present under each [f=SpecifyRuminant] component", new string[] { "Specify ruminant" });
             }
 
             // bubble through to check status of any cohorts as children of in SepcifyRuminant
-            foreach (RuminantTypeCohort cohort in Structure.FindChildren<RuminantTypeCohort>())
+            foreach (RuminantTypeCohort cohort in cohorts)
             {
                 foreach (var val in cohort.Validate(validationContext))
                 {

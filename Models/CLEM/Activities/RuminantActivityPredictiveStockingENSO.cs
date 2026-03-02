@@ -191,7 +191,7 @@ namespace Models.CLEM.Activities
         {
             ForecastSequence = new Dictionary<DateTime, double>();
 
-            Simulation simulation = Structure.FindParent<Simulation>(recurse: true);
+            Simulation simulation = Node.FindParent<Simulation>(recurse: true);
             if (simulation != null)
             {
                 fullFilename = PathUtilities.GetAbsolutePath(MonthlySOIFile, simulation.FileName);
@@ -232,14 +232,14 @@ namespace Models.CLEM.Activities
             InitialiseHerd(false, true);
 
             // try attach relationships
-            pastureToStockingChangeElNino = Structure.FindChildren<Relationship>().Where(a => a.Identifier == "PastureToStockingChangeElNino").FirstOrDefault();
-            pastureToStockingChangeLaNina = Structure.FindChildren<Relationship>().Where(a => a.Identifier == "PastureToStockingChangeLaNina").FirstOrDefault();
+            pastureToStockingChangeElNino = Node.FindChildren<Relationship>().Where(a => a.Identifier == "PastureToStockingChangeElNino").FirstOrDefault();
+            pastureToStockingChangeLaNina = Node.FindChildren<Relationship>().Where(a => a.Identifier == "PastureToStockingChangeLaNina").FirstOrDefault();
 
             filterGroups = GetCompanionModelsByIdentifier<RuminantGroup>(true, false);
             var grazeFoodStore = Resources.FindResourceGroup<GrazeFoodStore>();
             if (grazeFoodStore != null)
             {
-                paddocks = Structure.FindChildren<GrazeFoodStoreType>(relativeTo: grazeFoodStore);
+                paddocks = grazeFoodStore.Node.FindChildren<GrazeFoodStoreType>();
             }
 
             paddockChanges = new List<(string paddockName, double AE, double AeShortfall)>();
@@ -265,7 +265,7 @@ namespace Models.CLEM.Activities
             destockToSkip = 0;
             destockToDo = 0;
             IEnumerable<Ruminant> herd = GetIndividuals<Ruminant>(GetRuminantHerdSelectionStyle.AllOnFarm).Where(a => (a.Location ?? "") != "");
-            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd, Structure);
+            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd);
 
             // Get ENSO forecast for current time
             ENSOState forecastEnsoState = GetENSOMeasure();
@@ -442,7 +442,7 @@ namespace Models.CLEM.Activities
                     GrazeFoodStoreType pasture = paddocks.Where(a => a.Name == paddock.paddockName).FirstOrDefault();
                     if (pasture != null && MathUtilities.IsGreaterThanOrEqual(pasture.TonnesPerHectare * 1000, MinimumFeedBeforeRestock))
                     {
-                        var specifyComponents = Structure.FindChildren<SpecifyRuminant>();
+                        var specifyComponents = Node.FindChildren<SpecifyRuminant>();
                         if (specifyComponents.Count() == 0)
                         {
                             string warn = $"No [f=SpecifyRuminant]s were provided in [a={Name}]\r\nNo restocking will be performed.";

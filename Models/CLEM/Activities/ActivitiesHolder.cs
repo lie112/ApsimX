@@ -111,9 +111,9 @@ namespace Models.CLEM.Activities
         [EventSubscribe("Commencing")]
         private void SetUniqueActivityIDs(object sender, EventArgs e)
         {
-            foundReportActivitiesPerformed = base.Structure.FindAll<ReportActivitiesPerformed>().Any();
+            foundReportActivitiesPerformed = Node.FindAll<ReportActivitiesPerformed>().Any();
 
-            foreach (var activity in Structure.FindChildren<CLEMActivityBase>(recurse: true))
+            foreach (var activity in Node.FindChildren<CLEMActivityBase>(recurse: true))
             {
                 activity.UniqueID = NextGuID;
                 activity.Status = ActivityStatus.Ignored;
@@ -148,7 +148,7 @@ namespace Models.CLEM.Activities
         private void ReportAllActivityStatus(bool fromSetup = false)
         {
             // fire all activity performed triggers at end of time step
-            foreach (CLEMActivityBase child in Structure.FindChildren<CLEMActivityBase>())
+            foreach (CLEMActivityBase child in Node.FindChildren<CLEMActivityBase>(recurse: true))
             {
                 child.ReportActivityStatus(0, fromSetup);
             }
@@ -194,7 +194,7 @@ namespace Models.CLEM.Activities
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             // ensure all folders are not APSIM folders
-            if (Structure.FindChildren<Folder>(recurse: true).Any())
+            if (Node.FindChildren<Folder>(recurse: true).Any())
             {
                 yield return new ValidationResult("Only CLEMFolders should be used in the Activity holder. This type of folder provides functionality for working with Activities in CLEM. At least one APSIM Folder was used in the Activities section.", new string[] { "ActivityHolder" });
             }

@@ -93,7 +93,7 @@ namespace Models.CLEM.Groupings
             if(Style == ParameterStyle.GetFromParameters)
             {
                 // ensure parameters are available for all ruminant types
-                foreach (var rumtype in Structure.FindAll<RuminantType>())
+                foreach (var rumtype in Node.FindAll<RuminantType>())
                 {
                     if(rumtype.Parameters.GrowPF is null && rumtype.Parameters.Grow is null)
                     {

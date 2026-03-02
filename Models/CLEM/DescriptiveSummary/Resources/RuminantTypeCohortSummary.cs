@@ -40,7 +40,7 @@ public class RuminantTypeCohortSummary : DescriptiveSummaryProviderBase<Ruminant
             [
                 new ChildComponentGroup(
                 id: "ignoreall",
-                models: model.Structure.FindChildren<IModel>(),
+                models: model.Node.FindChildren<IModel>(),
                 include: false, 
                 missing: ""
                 )
@@ -60,15 +60,15 @@ public class RuminantTypeCohortSummary : DescriptiveSummaryProviderBase<Ruminant
 
         if (!FormatForParentControl)
         {
-            rumType = model.Structure.FindParent<RuminantType>(recurse: true);
+            rumType = model.Node.FindParent<RuminantType>(recurse: true);
             if (rumType is null)
             {
                 // look for rum type in SpecifyRuminant
-                var specParent = model.Structure.FindParents<SpecifyRuminant>().FirstOrDefault();
+                var specParent = model.Node.FindParents<SpecifyRuminant>().FirstOrDefault();
                 if (specParent != null)
                 {
-                    var zoneCLEM = model.Structure.FindParent<ZoneCLEM>(recurse: true);
-                    var resHolder = model.Structure.FindChild<ResourcesHolder>(relativeTo: zoneCLEM);
+                    var zoneCLEM = model.Node.FindParent<ZoneCLEM>(recurse: true);
+                    var resHolder = zoneCLEM.Node.FindChild<ResourcesHolder>();
                     rumType = resHolder.FindResourceType<RuminantHerd, RuminantType>(model, specParent.RuminantTypeName, OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.Ignore);
                     specifyRuminantParent = true;
                 }
@@ -193,10 +193,10 @@ public class RuminantTypeCohortSummary : DescriptiveSummaryProviderBase<Ruminant
                     }
                     break;
                 case "RuminantInitialCohorts":
-                    RuminantType rumtype = model.Structure.FindParent<RuminantType>(recurse: true);
+                    RuminantType rumtype = model.Node.FindParent<RuminantType>(recurse: true);
                     if (rumtype != null)
                     {
-                        RandomNumberGenerator rng = model.Structure.Find<RandomNumberGenerator>();
+                        RandomNumberGenerator rng = model.Node.Find<RandomNumberGenerator>();
                         if (rng is not null)
                             rng.SetForPreSimulation();
                         rumtype.Parameters.Initialise(rumtype);
@@ -232,7 +232,7 @@ public class RuminantTypeCohortSummary : DescriptiveSummaryProviderBase<Ruminant
                         if ((model.Parent as RuminantInitialCohorts).ConceptionsFound)
                         {
                             string conceptionDetails = "";
-                            var setConceptionFound = model.Structure.FindChild<SetPreviousConception>();
+                            var setConceptionFound = model.Node.FindChild<SetPreviousConception>();
                             if (setConceptionFound != null)
                                 conceptionDetails = $"{generator.DisplaySummaryValueSnippet(setConceptionFound.NumberDaysPregnant)} days";
                             cellValues.Add((conceptionDetails, true));
@@ -240,7 +240,7 @@ public class RuminantTypeCohortSummary : DescriptiveSummaryProviderBase<Ruminant
 
                         if ((model.Parent as RuminantInitialCohorts).AttributesFound)
                         {
-                            var setAttributesFound = model.Structure.FindChildren<SetAttributeWithValue>();
+                            var setAttributesFound = model.Node.FindChildren<SetAttributeWithValue>();
                             string attributes = "";
                             foreach (var attribute in setAttributesFound)
                             {

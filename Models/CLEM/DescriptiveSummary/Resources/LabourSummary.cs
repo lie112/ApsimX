@@ -31,7 +31,7 @@ public class LabourSummary : DescriptiveSummaryProviderBase<Labour>
                 ),
             new ChildComponentGroup(
                 id: "aerelationship",
-                models: model.Structure.FindChildren<Relationship>().Where(a => a.Identifier == "Adult equivalent"),
+                models: model.Node.FindChildren<Relationship>().Where(a => a.Identifier == "Adult equivalent"),
                 childType: typeof(Relationship),
                 introduction: "The following relationship is used to calculate the Adult Equivalent of each person",
                 missing: $"No {generator.DisplaySummaryValueSnippet("Relationship", entryStyle:HTMLSummaryStyle.Helper)} with the identifier {generator.DisplaySummaryValueSnippet("Adult equivalent")} was provided. All individuals are assumed to be 1 AE."

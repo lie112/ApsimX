@@ -203,7 +203,7 @@ namespace Models.CLEM
         {
             get
             {
-                Simulation simulation = Structure.FindParent<Simulation>(recurse: true);
+                Simulation simulation = Node.FindParent<Simulation>(recurse: true);
                 if (simulation != null && this.FileName != null)
                 {
                     return PathUtilities.GetAbsolutePath(this.FileName, simulation.FileName);

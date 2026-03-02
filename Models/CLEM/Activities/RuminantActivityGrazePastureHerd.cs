@@ -192,9 +192,9 @@ namespace Models.CLEM.Activities
             {
                 Name = $"Filter_{location}_{shortHerdName}"
             };
-            Structure.AddChild(herdGroup);
+            Node.AddChild(herdGroup);
 
-            herdGroup.Structure.AddChild(new FilterByProperty()
+            herdGroup.Node.AddChild(new FilterByProperty()
             {
                 PropertyOfIndividual = "Location",
                 Operator = System.Linq.Expressions.ExpressionType.Equal,
@@ -202,7 +202,7 @@ namespace Models.CLEM.Activities
                 Parent = herdGroup,
                 Name = "GrazeLocation"
             });
-            herdGroup.Structure.AddChild(new FilterByProperty()
+            herdGroup.Node.AddChild(new FilterByProperty()
             {
                 PropertyOfIndividual = "HerdName",
                 Operator = System.Linq.Expressions.ExpressionType.Equal,
@@ -227,11 +227,11 @@ namespace Models.CLEM.Activities
             GrazeFoodStoreModel = Resources.FindResourceType<GrazeFoodStore, IGrazeFoodStoreType>(this, GrazeFoodStoreTypeName, OnMissingResourceActionTypes.ReportErrorAndStop, OnMissingResourceActionTypes.ReportErrorAndStop);
             RuminantTypeModel = Resources.FindResourceType<RuminantHerd, RuminantType>(this, RuminantTypeName, OnMissingResourceActionTypes.ReportErrorAndStop, OnMissingResourceActionTypes.ReportErrorAndStop);
 
-            usingGrowPF = Structure.Find<RuminantActivityGrowPF>()?.Enabled ?? false;
+            usingGrowPF = Node.Find<RuminantActivityGrowPF>()?.Enabled ?? false;
 
-            shortfallReportingCutoff = Structure.Find<ReportResourceShortfalls>()?.PropPastureShortfallOfDesiredIntake ?? 0.02;
+            shortfallReportingCutoff = Node.Find<ReportResourceShortfalls>()?.PropPastureShortfallOfDesiredIntake ?? 0.02;
 
-            HerdResource = Structure.Find<RuminantHerd>();
+            HerdResource = Node.Find<RuminantHerd>();
 
             AddHerdLocationFilter();
 
@@ -539,7 +539,7 @@ namespace Models.CLEM.Activities
         {
             if (GrazeFoodStoreTypeName.Contains("."))
             {
-                ResourcesHolder resHolder = Structure.Find<ResourcesHolder>();
+                ResourcesHolder resHolder = Node.Find<ResourcesHolder>();
                 if (resHolder is null || resHolder.FindResourceType<GrazeFoodStore, IGrazeFoodStoreType>(this, GrazeFoodStoreTypeName) is null)
                 {
                     yield return new ValidationResult($"The location defined for grazing [r={GrazeFoodStoreTypeName}] in [a={Name}] is not found.{Environment.NewLine}Ensure [r=GrazeFoodStore] is present and the [GrazeFoodStoreType] is present", new string[] { "Location is not valid" });

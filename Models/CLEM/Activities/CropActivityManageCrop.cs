@@ -125,7 +125,7 @@ namespace Models.CLEM.Activities
                 }
 
                 int i = 0;
-                foreach (CropActivityManageProduct item in Structure.FindChildren<CropActivityManageProduct>())
+                foreach (CropActivityManageProduct item in Node.FindChildren<CropActivityManageProduct>())
                 {
                     item.CurrentlyManaged = (i == currentCropIndex);
                     if (item.CurrentlyManaged)

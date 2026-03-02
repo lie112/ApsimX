@@ -68,7 +68,7 @@ namespace Models.CLEM
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (!Structure.FindChildren<ITransmute>().Where(a => (a as IModel).Enabled).Any())
+            if (!Node.FindChildren<ITransmute>().Where(a => (a as IModel).Enabled).Any())
             {
                 yield return new ValidationResult("No transmute components provided under this transmutation", new string[] { "Transmutes" });
             }

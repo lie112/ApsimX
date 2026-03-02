@@ -95,7 +95,7 @@ namespace Models.CLEM.Activities
 
             pasture = Resources.FindResourceType<GrazeFoodStore, GrazeFoodStoreType>(this, PaddockName, OnMissingResourceActionTypes.ReportErrorAndStop, OnMissingResourceActionTypes.ReportErrorAndStop);
             foodStore = Resources.FindResourceType<AnimalFoodStore, AnimalFoodStoreType>(this, AnimalFoodStoreName, OnMissingResourceActionTypes.ReportErrorAndStop, OnMissingResourceActionTypes.ReportErrorAndStop);
-            limiter = ActivityCarryLimiter.Locate(this, Structure);
+            limiter = ActivityCarryLimiter.Locate(this);
 
             switch (CutStyle)
             {

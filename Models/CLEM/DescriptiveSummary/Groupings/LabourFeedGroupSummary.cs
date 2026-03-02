@@ -57,8 +57,8 @@ public class LabourFeedGroupSummary : GroupSummaryBase<LabourFeedGroup>
                 break;
         }
 
-        ZoneCLEM zoneCLEM = ModelTyped.Structure.FindParent<ZoneCLEM>(recurse: true);
-        ResourcesHolder resHolder = ModelTyped.Structure.FindChild<ResourcesHolder>(relativeTo: zoneCLEM);
+        ZoneCLEM zoneCLEM = ModelTyped.Node.FindParent<ZoneCLEM>(recurse: true);
+        ResourcesHolder resHolder = zoneCLEM.Node.FindChild<ResourcesHolder>();
         HumanFoodStoreType food = resHolder.FindResourceType<HumanFoodStore, HumanFoodStoreType>(ModelTyped, (ModelTyped.Parent as LabourActivityFeed).FeedTypeName, OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.Ignore);
         if (food != null)
         {

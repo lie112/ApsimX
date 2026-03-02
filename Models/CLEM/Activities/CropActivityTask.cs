@@ -57,7 +57,7 @@ namespace Models.CLEM.Activities
         [EventSubscribe("CLEMInitialiseActivity")]
         private void OnCLEMInitialiseActivity(object sender, EventArgs e)
         {
-            parentManagementActivity = Structure.FindParent<CropActivityManageCrop>(recurse: true);
+            parentManagementActivity = Node.FindParent<CropActivityManageCrop>(recurse: true);
             parentManageProductActivity = (Parent as CropActivityManageProduct);
         }
 
@@ -67,14 +67,14 @@ namespace Models.CLEM.Activities
             amountToSkip = 0;
             if (TimingOK)
             {
-                if (Structure.FindParent<CropActivityManageProduct>(recurse: true).CurrentlyManaged)
+                if (Node.FindParent<CropActivityManageProduct>(recurse: true).CurrentlyManaged)
                 {
                     Status = ActivityStatus.Success;
                 }
                 else
                 {
                     Status = ActivityStatus.Warning;
-                    foreach (var child in Structure.FindChildren<CLEMActivityBase>())
+                    foreach (var child in Node.FindChildren<CLEMActivityBase>())
                     {
                         child.Status = ActivityStatus.Warning;
                     }

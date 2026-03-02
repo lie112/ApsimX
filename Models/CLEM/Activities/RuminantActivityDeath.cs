@@ -62,7 +62,7 @@ namespace Models.CLEM.Activities
         {
             // get all ui tree herd filters that relate to this activity
             InitialiseHerd(true, true);
-            filterGroups = Structure.FindChildren<IRuminantDeathGroup>();
+            filterGroups = Node.FindChildren<IRuminantDeathGroup>();
         }
 
         /// <summary>Function to determine which animals have died and remove from the population</summary>
@@ -104,7 +104,7 @@ namespace Models.CLEM.Activities
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             // if no filter groups error
-            var filterGroups = Structure.FindChildren<IRuminantDeathGroup>();
+            var filterGroups = Node.FindChildren<IRuminantDeathGroup>();
             if(!filterGroups.Any())
             {
                 yield return new ValidationResult($"At least one [RuminantDeathGroup] is required as a child of the [a=RuminantActivityDeath] component [{NameWithParent}]", new string[] { "Missing FilterGroup" });

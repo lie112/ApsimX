@@ -206,7 +206,7 @@ namespace Models.CLEM.Resources
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (Structure.FindChildren<Transmutation>().Count() > 0)
+            if (Node.FindChildren<Transmutation>().Count() > 0)
             {
                 string[] memberNames = new string[] { "Transmutations" };
                 yield return new ValidationResult("Transmutations are not available for the CommonLandFoodStoreType (" + this.Name + ")", memberNames);

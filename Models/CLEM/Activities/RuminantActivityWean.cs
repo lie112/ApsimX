@@ -10,6 +10,7 @@ using Models.CLEM.Reporting;
 using System.IO;
 using Models.CLEM.Interfaces;
 using APSIM.Core;
+using System.Security.Cryptography.Xml;
 
 namespace Models.CLEM.Activities
 {
@@ -128,8 +129,8 @@ namespace Models.CLEM.Activities
                     if (GrazeFoodStoreName == "Not specified - general yards")
                     {
                         grazeStore = "";
-                        ActivitiesHolder ah = Structure.Find<ActivitiesHolder>();
-                        if (Structure.FindChildren<PastureActivityManage>(relativeTo: ah, recurse: true).Any())
+                        ActivitiesHolder ah = Node.Find<ActivitiesHolder>();
+                        if (ah.Node.FindChildren<PastureActivityManage>(recurse: true).Any())
                         {
                             Summary.WriteMessage(this, $"Individuals weaned by [a={NameWithParent}] will be placed in [Not specified - general yards] while a managed pasture is available. These animals will not graze until moved and will require feeding while in yards.\r\nSolution: Set the [GrazeFoodStore to place weaners in] located in the properties.", MessageType.Warning);
                         }
@@ -153,7 +154,7 @@ namespace Models.CLEM.Activities
             numberToSkip = 0;
             sucklingToSkip = 0;
             IEnumerable<Ruminant> sucklingHerd = GetIndividuals<Ruminant>(GetRuminantHerdSelectionStyle.AllOnFarm).Where(a => a.IsWeaned == false);
-            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, sucklingHerd, Structure);
+            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, sucklingHerd);
             sucklingsToCheck = uniqueIndividuals?.Count() ?? 0;
             numberToDo = uniqueIndividuals.Where(a => (a.AgeInDays >= WeaningAge.InDays && (Style == WeaningStyle.AgeOrWeight || Style == WeaningStyle.AgeOnly)) || (a.Weight.Live >= WeaningWeight && (Style == WeaningStyle.AgeOrWeight || Style == WeaningStyle.WeightOnly)))?.Count() ?? 0;
 

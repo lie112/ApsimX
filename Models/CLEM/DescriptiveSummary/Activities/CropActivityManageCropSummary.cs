@@ -26,7 +26,7 @@ public class CropActivityManageCropSummary : DescriptiveSummaryProviderBase<Crop
     ///<inheritdoc/>
     public override List<ChildComponentGroup> GetChildrenInSummary()
     {
-        string intro = (ModelTyped.Structure.FindChildren<CropActivityManageProduct>().Count() > 1) ? "Rotating through crops" : "";
+        string intro = (ModelTyped.Node.FindChildren<CropActivityManageProduct>().Count() > 1) ? "Rotating through crops" : "";
 
         return
         [
@@ -48,12 +48,12 @@ public class CropActivityManageCropSummary : DescriptiveSummaryProviderBase<Crop
         htmlWriter.Write("This crop uses ");
 
         Land parentLand = null;
-        var clemParent = ModelTyped.Structure.FindParent<ZoneCLEM>(relativeTo: ModelTyped, recurse: true);
+        var clemParent = ModelTyped.Node.FindParent<ZoneCLEM>(relativeTo: ModelTyped, recurse: true);
         if (ModelTyped.LandItemNameToUse != null && ModelTyped.LandItemNameToUse != "")
         {
             if (clemParent != null && clemParent.Enabled)
             {
-                parentLand = ModelTyped.Structure.Find<Land>(ModelTyped.LandItemNameToUse.Split('.')[0], relativeTo: clemParent);
+                parentLand = ModelTyped.Node.Find<Land>(ModelTyped.LandItemNameToUse.Split('.')[0], relativeTo: clemParent);
             }
         }
 

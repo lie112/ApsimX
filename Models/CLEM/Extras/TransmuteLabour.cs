@@ -73,7 +73,7 @@ namespace Models.CLEM
             ResourceGroup = resources.FindResourceGroup<Labour>();
             shortfallPacketSize = (Parent as Transmutation).TransmutationPacketSize;
             shortfallWholePackets = (Parent as Transmutation).UseWholePackets;
-            groupings = Structure.FindChildren<RuminantGroup>().ToList<object>();
+            groupings = Node.FindChildren<RuminantGroup>().ToList<object>();
         }
 
         ///<inheritdoc/>
@@ -85,8 +85,7 @@ namespace Models.CLEM
             {
                 request.FilterDetails = groupings;
                 CLEMActivityBase.TakeLabour(request, !queryOnly, request.ActivityModel, resources,
-                                            (request.ActivityModel is CLEMActivityBase) ?(request.ActivityModel as CLEMActivityBase).AllowsPartialResourcesAvailable:false,
-                                            Structure);
+                                            (request.ActivityModel is CLEMActivityBase) ?(request.ActivityModel as CLEMActivityBase).AllowsPartialResourcesAvailable:false);
             }
             return (request.Provided >= request.Required);
         }
@@ -110,7 +109,7 @@ namespace Models.CLEM
             IResourceType parentResource = null;
             if (ResourceGroup is null)
             {
-                parentResource = Structure.FindParent<CLEMResourceTypeBase>(recurse: true) as IResourceType;
+                parentResource = Node.FindParent<CLEMResourceTypeBase>(recurse: true) as IResourceType;
                 yield return new ValidationResult($"No [r=Labour] resource was found for a labour-based transmutation [{this.Name}] of [{parentResource.Name}]", new string[] { "Labour resource" });
             }
 
@@ -118,7 +117,7 @@ namespace Models.CLEM
             {
                 if (parentResource is null)
                 {
-                    parentResource = Structure.FindParent<CLEMResourceTypeBase>(recurse: true) as IResourceType;
+                    parentResource = Node.FindParent<CLEMResourceTypeBase>(recurse: true) as IResourceType;
                 }
 
                 yield return new ValidationResult($"The UsePricing Transmute style is not supported in the [{this.Name}] of [{parentResource.Name}]", new string[] { "Transmte pricing" });
