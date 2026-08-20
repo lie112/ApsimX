@@ -496,7 +496,9 @@ namespace Models.CLEM.Activities
             pastureRequest.Provided = Math.Min(pastureRequest.Required, amountPending);
 
             PotentialIntakePastureQualityLimiter = amountPending / requiredTotal;
-            Status = ActivityStatus.Success;
+
+            if(desiredTotal > 0)
+                Status = ActivityStatus.Success;
 
             if (apsimLink is not null) 
             {
