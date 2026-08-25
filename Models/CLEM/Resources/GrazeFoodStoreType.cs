@@ -722,7 +722,7 @@ namespace Models.CLEM.Resources
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         [EventSubscribe("CLEMPastureReady")]
-        private void ONCLEMPastureReady(object sender, EventArgs e)
+        private void OnCLEMPastureReady(object sender, EventArgs e)
         {
             // do not return zero as there is always something there and zero affects calculations.
             base.Set(Pools.Sum(a => a.Amount));
