@@ -298,8 +298,8 @@ namespace Models.CLEM.Activities
                     LinkedNativeFoodType.CurrentEcologicalIndicators.Rainfall += dataEntry.Rainfall;
                     LinkedNativeFoodType.CurrentEcologicalIndicators.Erosion += dataEntry.SoilLoss;
                     LinkedNativeFoodType.CurrentEcologicalIndicators.Runoff += dataEntry.Runoff;
-                    LinkedNativeFoodType.CurrentEcologicalIndicators.Cover += dataEntry.Cover;
-                    LinkedNativeFoodType.CurrentEcologicalIndicators.TreeBasalArea += dataEntry.TreeBA;
+                    LinkedNativeFoodType.CurrentEcologicalIndicators.Cover = dataEntry.Cover;
+                    LinkedNativeFoodType.CurrentEcologicalIndicators.TreeBasalArea = dataEntry.TreeBA;
 
                     if (growth > 0)
                     {
@@ -347,7 +347,7 @@ namespace Models.CLEM.Activities
             stockingRateSummed += CalculateStockingRateRightNow(Resources.FindResourceGroup<RuminantHerd>(), FeedTypeName, Area * unitsOfArea2Ha * ha2sqkm);
 
             //If it is time to do yearly calculation
-            if (events.IsEcologicalIndicatorsCalculationDue())
+            if (LinkedNativeFoodType is not null && events.IsEcologicalIndicatorsCalculationDue())
             {
                 CalculateEcologicalIndicators(LinkedNativeFoodType, LandConditionIndex, GrassBasalArea, stockingRateSummed, events.EcologicalIndicatorsCalculationInterval, events.Clock.StartDate, events.EcologicalIndicatorsNextDueDate);
 
