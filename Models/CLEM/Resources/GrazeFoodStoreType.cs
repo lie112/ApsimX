@@ -650,31 +650,48 @@ namespace Models.CLEM.Resources
         [EventSubscribe("CLEMDetachPasture")]
         private void OnCLEMDetachPasture(object sender, EventArgs e)
         {
-            // detach and carryover detach are monthly so divide by 30.4 to daily and apply for time-step
-            if (DetachRate <= 1 | CarryoverDetachRate <= 1)
+            DetachPasture(events.Interval, 30.4);
+        }
+
+        /// <summary>
+        /// Detach pasture based on specified detachment rate for pools less than and greater than or equal to 12 months
+        /// old
+        /// </summary>
+        /// <param name="daysInTimeStep">Number of days in the time step</param>
+        /// <param name="daysInMonth">Number of days in a month for conversion from monthly to daily rates</param>
+        /// <exception cref="ApsimXException"></exception>
+        public void DetachPasture(int daysInTimeStep, double daysInMonth)
+        {
+            if (daysInMonth == 0)
+                return;
+
+            if (daysInMonth <= 0)
+                throw new ApsimXException(this, $"Core logic error: Invalid days in month provided [{daysInMonth}] to detach pasture by [r={this.NameWithParent}]");
+
+            if (DetachRate < 0)
+                throw new ApsimXException(this, $"Core logic error: Negative detachment rate applied by [r={this.NameWithParent}]");
+
+            if (CarryoverDetachRate < 0)
+                throw new ApsimXException(this, $"Core logic error: Negative carryover detachment rate applied by [r={this.NameWithParent}]");
+
+            double detached = 0;
+            foreach (var pool in Pools)
             {
-                double detached = 0;
-                foreach (var pool in Pools)
+                if (pool.AmountPending > 0)
                 {
-                    if (pool.AmountPending > 0)
-                    {
-                        throw new ApsimXException(this, "Core logic error: Cannot detach pasture as there is pending growth or grazing. Check timers of managing activities to ensure they run after detachment");
-                    }
-
-                    double detach = Math.Min(1.0, DetachRate / 30.4 * events.Interval);
-                    if (pool.Age >= 12)
-                    {
-                        detach = CarryoverDetachRate / 30.4 * events.Interval;
-                    }
-                    detached += pool.Detach(detach);
+                    throw new ApsimXException(this, "Core logic error: Cannot detach pasture as there is pending growth or grazing. Check timers of managing activities to ensure they run after detachment or pending resources are handled before detachment");
                 }
 
+                double rate = (pool.Age >= 12) ? CarryoverDetachRate : DetachRate;
+                double detach = Math.Min(1.0, rate / daysInMonth * daysInTimeStep);
+                
+                detached += pool.Detach(detach);
+            }
 
-                if (detached > 0)
-                {
-                    base.RemoveFromResource(detached, null);
-                    ReportTransaction(TransactionType.Loss, detached, null, null, "Detached", this);
-                }
+            if (detached > 0)
+            {
+                base.RemoveFromResource(detached, null);
+                ReportTransaction(TransactionType.Loss, detached, null, null, "Detached", this);
             }
         }
 
@@ -687,26 +704,37 @@ namespace Models.CLEM.Resources
         private void OnCLEMAgeResources(object sender, EventArgs e)
         {
             // Nitrogen and DMD are monthly so divide by 30.4 to daily and apply for time-step
-            if (DecayNitrogen != 0 | (DecayDMD > 0 && DMDStyle == DryMatterDigestibilityStyle.SpecifyNewGrowthDMD))
+            AgePasture(events.Interval, 30.4);
+
+        }
+
+        /// <summary>
+        /// Age pasture by days in the time step
+        /// </summary>
+        /// <param name="daysInTimeStep">Number of days in the time step</param>
+        /// <param name="daysInMonth">Number of days in a month for conversion from monthly to daily rates</param>
+        /// <exception cref="ApsimXException"></exception>
+        public void AgePasture(int daysInTimeStep, double daysInMonth)
+        {
+            foreach (var pool in Pools)
             {
-                // decay N and DMD of pools and age by 1 month
-                foreach (var pool in Pools)
+                // N is a loss of N% (x = x -loss)
+                if (DecayNitrogen > 0)
                 {
-                    // N is a loss of N% (x = x -loss)
-                    pool.NitrogenPercent = Math.Max(pool.NitrogenPercent - (DecayNitrogen / 30.4 * events.Interval), MinimumNitrogen);
-
-                    if (DMDStyle == DryMatterDigestibilityStyle.SpecifyNewGrowthDMD)
-                    {
-                        // DMD is a proportional loss (x = x*(1-proploss))
-                        pool.DryMatterDigestibility = Math.Max(pool.DryMatterDigestibility * (1 - (DecayDMD / 30.4 * events.Interval)), MinimumDMD);
-                    }
-
-                    int age = Convert.ToInt32((events.Clock.Today - pool.GrowthDate).TotalDays / 30.4);
-                    pool.Age = age;
+                    pool.NitrogenPercent = Math.Max(pool.NitrogenPercent - (DecayNitrogen / daysInMonth * daysInTimeStep), MinimumNitrogen);
                 }
-                // remove all pools with less than 1g of food
-                Pools.RemoveAll(a => a.Amount < 0.001);
+
+                if (DecayDMD > 0 && DMDStyle == DryMatterDigestibilityStyle.SpecifyNewGrowthDMD)
+                {
+                    // DMD is a proportional loss (x = x*(1-proploss))
+                    pool.DryMatterDigestibility = Math.Max(pool.DryMatterDigestibility * (1 - (DecayDMD / daysInMonth * daysInTimeStep)), MinimumDMD);
+                }
+
+                int age = Convert.ToInt32((events.TimeStepEnd - pool.GrowthDate).TotalDays / daysInMonth);
+                pool.Age = age;
             }
+            // remove all pools with less than 1g of food
+            Pools.RemoveAll(a => a.Amount < 0.001);
 
             if (events.IsEcologicalIndicatorsCalculationDue())
             {
@@ -715,7 +743,6 @@ namespace Models.CLEM.Resources
                 biomassAddedThisYear = 0;
                 biomassConsumed = 0;
             }
-
         }
 
         /// <summary>Store amount of pasture available for everyone at the start of the step (kg per hectare)</summary>
@@ -1005,7 +1032,7 @@ namespace Models.CLEM.Resources
         /// <param name="amountToRemove">Amount to remove from resource store</param>
         /// <param name="pendingRequest">
         /// Provides a the request if this is a pending transaction that has not yet been completed. This will not
-        /// reduce the amount total until available until the transaction is completed.
+        /// reduce the amount total available until the transaction is completed.
         /// </param>
         /// <returns>Amount removed</returns>
         protected double Remove(double amountToRemove, ResourceRequest pendingRequest)
@@ -1030,13 +1057,13 @@ namespace Models.CLEM.Resources
         /// Decrease pending for specified food resource store
         /// </summary>
         /// <param name="request"></param>
-        /// <param name="store"></param>
-        /// <param name="amount"></param>
+        /// <param name="store">Food store to modify</param>
+        /// <param name="amount">Amount to decrease (kg/day)</param>
         public void DecreasePendingByStore(ResourceRequest request, FoodResourceStore store, double amount)
         {
             for (int i = 0; i < store.Pools.Count; i++)
             {
-                store.Pools[i].ReducePending(amount * store.PoolProportions[i]);
+                store.Pools[i].ReducePending(amount * store.NumberOfDaysInTimestep * store.PoolProportions[i]); 
             }
 
             // do removal from pending

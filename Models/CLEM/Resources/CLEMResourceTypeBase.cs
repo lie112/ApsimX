@@ -1,16 +1,10 @@
-using APSIM.Core;
 using Docker.DotNet.Models;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Models.CLEM.Interfaces;
 using Models.Core;
 using Models.Core.Attributes;
-using Models.PMF;
-using NetTopologySuite.Precision;
 using Newtonsoft.Json;
-using StdUnits;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Models.CLEM.Resources
