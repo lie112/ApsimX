@@ -11,26 +11,15 @@ using System.Threading.Tasks;
 namespace UnitTests.CLEM
 {
     /// <summary>
-    /// Test the application of details provided in the RuminantTypeCohort to create individuals in the RuminantHerd
-    /// This does not Consider newborn individuals created from RuminantFemale.Births
+    /// Test the application add, remove, and prending transactions on as ResourceType that uses methods of
+    /// ResourceTypeWithTransactionsBase
     /// </summary>
     [TestFixture]
-    public class RuminantInitialiseTest
+    public class ResourceBaseTests
     {
-        private Simulations singleSheepSim;
-        private RuminantTypeCohort sheepCohort;
-        private RuminantHerd sheepHerd;
-
         [SetUp]
         public void SetUp()
         {
-            singleSheepSim = Utilities.ReadFromResource<Simulations>("UnitTests.CLEM.Resources.SingleSheep.apsimx", e => throw e);
-            sheepCohort = singleSheepSim.Node.Find<RuminantTypeCohort>();
-            sheepHerd = singleSheepSim.Node.Find<RuminantHerd>();
-            foreach (var sheepType in sheepHerd.Node.FindChildren<RuminantType>())
-            {
-                sheepType.Parameters.Initialise(sheepType);
-            }
         }
 
         // Setting initial weight with options
