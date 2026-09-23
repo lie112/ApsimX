@@ -2,6 +2,7 @@
 using Models.CLEM.Resources;
 using Models.Core;
 using NUnit.Framework;
+using System;
 using UnitTests.Properties;
 
 namespace UnitTests.CLEM
@@ -31,7 +32,7 @@ namespace UnitTests.CLEM
 
             Assert.That(grazeFoodStore.Pools.Count, Is.EqualTo(1), actualExpression: "Number of pools");
             Assert.That(grazeFoodStore.Pools[0].Amount, Is.EqualTo(kgTotal));
-            Assert.That(grazeFoodStore.Pools[0].Age, Is.EqualTo(0), actualExpression: "New pool age");
+            Assert.That(grazeFoodStore.Pools[0].AgeInDays, Is.EqualTo(0), actualExpression: "New pool age");
         }
 
         // add kg per ha to pasture as if read from data file in CropActivityManage
@@ -39,24 +40,23 @@ namespace UnitTests.CLEM
         public void AddResourceInAnotherTimestep_ByAmount(double kgTotal)
         {
             grazeFoodStore.AddToResource(5.0, cropActivityManageProduct, "None", "None");
-            grazeFoodStore.Pools[0].Age = 1;
+            grazeFoodStore.Pools[0].UpdateAge(DateTime.Now.AddMonths(-1), DateTime.Now);
 
             grazeFoodStore.AddToResource(kgTotal, cropActivityManageProduct, "None", "None");
             Assert.That(grazeFoodStore.Pools.Count, Is.EqualTo(2), actualExpression: "Number of pools");
             Assert.That(grazeFoodStore.Pools[0].Amount, Is.EqualTo(kgTotal));
-            Assert.That(grazeFoodStore.Pools[0].Age, Is.EqualTo(0), actualExpression: "New pool age");
+            Assert.That(grazeFoodStore.Pools[0].AgeInMonths, Is.EqualTo(0), actualExpression: "New pool age");
 
             Assert.That(grazeFoodStore.Pools[1].Amount, Is.EqualTo(5), actualExpression: "Previous pool amount");
-            Assert.That(grazeFoodStore.Pools[1].Age, Is.EqualTo(1), actualExpression: "Previous pool age");
+            Assert.That(grazeFoodStore.Pools[1].AgeInMonths, Is.EqualTo(1), actualExpression: "Previous pool age");
         }
 
         // add kg per ha to pasture as if read from data file in CropActivityManage
         [TestCase(1000)]
         public void AddResource_ByGrazeFoodStorePool(double kgTotal)
         {
-            GrazeFoodStorePool pool = new(kgTotal)
+            GrazeFoodStorePool pool = new(kgTotal, grazeFoodStore, DateTime.Now.AddMonths(-1), DateTime.Now)
             {
-                Age = 0,
                 DryMatterDigestibility = 85,
                 NitrogenPercent = 2.5
             };
@@ -65,7 +65,7 @@ namespace UnitTests.CLEM
 
             Assert.That(grazeFoodStore.Pools.Count, Is.EqualTo(1), actualExpression: "Number of pools");
             Assert.That(grazeFoodStore.Pools[0].Amount, Is.EqualTo(kgTotal));
-            Assert.That(grazeFoodStore.Pools[0].Age, Is.EqualTo(0), actualExpression: "New pool age");
+            Assert.That(grazeFoodStore.Pools[0].AgeInDays, Is.EqualTo(0), actualExpression: "New pool age");
             Assert.That(grazeFoodStore.Pools[0].DryMatterDigestibility, Is.EqualTo(85), actualExpression: "New pool dry matter digestibility");
             Assert.That(grazeFoodStore.Pools[0].NitrogenPercent, Is.EqualTo(2.5), actualExpression: "New pool nitrogen percent");
         }
@@ -74,18 +74,16 @@ namespace UnitTests.CLEM
         [TestCase(1000)]
         public void AddResource_BySecondGrazeFoodStorePool(double kgTotal)
         {
-            GrazeFoodStorePool pool = new(kgTotal)
+            GrazeFoodStorePool pool = new(kgTotal, grazeFoodStore, DateTime.Now.AddMonths(-1), DateTime.Now)
             {
-                Age = 1,
                 DryMatterDigestibility = 80,
                 NitrogenPercent = 2
             };
 
             grazeFoodStore.AddToResource(pool, cropActivityManageProduct, "None", "None");
 
-            GrazeFoodStorePool pool2 = new(kgTotal * 2)
+            GrazeFoodStorePool pool2 = new(kgTotal * 2, grazeFoodStore, DateTime.Now.AddMonths(-1), DateTime.Now)
             {
-                Age = 0,
                 DryMatterDigestibility = 70,
                 NitrogenPercent = 3
             };
@@ -94,7 +92,7 @@ namespace UnitTests.CLEM
 
             Assert.That(grazeFoodStore.Pools.Count, Is.EqualTo(2), actualExpression: "Number of pools");
             Assert.That(grazeFoodStore.Pools[0].Amount, Is.EqualTo(kgTotal * 2));
-            Assert.That(grazeFoodStore.Pools[0].Age, Is.EqualTo(0), actualExpression: "2nd pool age");
+            Assert.That(grazeFoodStore.Pools[0].AgeInMonths, Is.EqualTo(0), actualExpression: "2nd pool age");
             Assert.That(grazeFoodStore.Pools[0].DryMatterDigestibility, Is.EqualTo(70), actualExpression: "2nd pool dry matter digestibility");
             Assert.That(grazeFoodStore.Pools[0].NitrogenPercent, Is.EqualTo(3), actualExpression: "2nd pool nitrogen percent");
             Assert.That(grazeFoodStore.AmountAvailable, Is.EqualTo(3000), actualExpression: "Amount available");
@@ -163,15 +161,12 @@ namespace UnitTests.CLEM
         // create a three pool food stor for testing
         public void CreateThreePoolStore(GrazeFoodStoreType type, double amount1, double amount2, double amount3, int age1, int age2, int age3)
         {
-            GrazeFoodStorePool pool1 = new(amount1);
+            GrazeFoodStorePool pool1 = new(amount1, type, DateTime.Now.AddDays(age1*-1), DateTime.Now);
             type.AddToResource(pool1, cropActivityManageProduct, "None", "None");
-            GrazeFoodStorePool pool2 = new(amount2);
+            GrazeFoodStorePool pool2 = new(amount2, type, DateTime.Now.AddDays(age2*-1), DateTime.Now);
             type.AddToResource(pool2, cropActivityManageProduct, "None", "None");
-            GrazeFoodStorePool pool3 = new(amount3);
+            GrazeFoodStorePool pool3 = new(amount3, type, DateTime.Now.AddDays(age3*-1), DateTime.Now);
             type.AddToResource(pool3, cropActivityManageProduct, "None", "None");
-            type.Pools[0].Age = age1;
-            type.Pools[1].Age = age2;
-            type.Pools[2].Age = age3;
             return;
         }
 
@@ -187,9 +182,8 @@ namespace UnitTests.CLEM
         {
             grazeFoodStore.DetachRate = detachRate;
             grazeFoodStore.CarryoverDetachRate = carryoverDetachRate;
-            GrazeFoodStorePool pool1 = new(100.0);
+            GrazeFoodStorePool pool1 = new(100.0, grazeFoodStore, DateTime.Now.AddMonths(-1), DateTime.Now);
             grazeFoodStore.AddToResource(pool1, cropActivityManageProduct, "None", "None");
-            grazeFoodStore.Pools[0].Age = 1;
 
             Assert.That(() => grazeFoodStore.DetachPasture(10, 30.4), Throws.Exception);
         }
@@ -199,9 +193,8 @@ namespace UnitTests.CLEM
         {
             grazeFoodStore.DetachRate = 0.304; // 0.01 daily at 30.4 days in month
             grazeFoodStore.CarryoverDetachRate = 0.608; // 0,02 daily at 30.4 days in month
-            GrazeFoodStorePool pool1 = new(100.0);
+            GrazeFoodStorePool pool1 = new(100.0, grazeFoodStore, DateTime.Now.AddMonths(-1), DateTime.Now);
             grazeFoodStore.AddToResource(pool1, cropActivityManageProduct, "None", "None");
-            grazeFoodStore.Pools[0].Age = 1;
 
             grazeFoodStore.DetachPasture(10, 30.4);
 
@@ -214,9 +207,8 @@ namespace UnitTests.CLEM
         {
             grazeFoodStore.DetachRate = 0.304; // 0.01 daily at 30.4 days in month
             grazeFoodStore.CarryoverDetachRate = 0.608; // 0,02 daily at 30.4 days in month
-            GrazeFoodStorePool pool1 = new(100.0);
+            GrazeFoodStorePool pool1 = new(100.0, grazeFoodStore, DateTime.Now.AddMonths(-12), DateTime.Now);
             grazeFoodStore.AddToResource(pool1, cropActivityManageProduct, "None", "None");
-            grazeFoodStore.Pools[0].Age = 12;
 
             Assert.That(grazeFoodStore.AmountAvailable, Is.EqualTo(80.0), actualExpression: "Amount available");
             Assert.That(grazeFoodStore.Pools[0].Amount, Is.EqualTo(80.0));
@@ -225,9 +217,8 @@ namespace UnitTests.CLEM
         [Test]
         public void AgePasture()
         {
-            GrazeFoodStorePool pool1 = new(100.0);
+            GrazeFoodStorePool pool1 = new(100.0, grazeFoodStore, DateTime.Now.AddMonths(-12), DateTime.Now);
             grazeFoodStore.AddToResource(pool1, cropActivityManageProduct, "None", "None");
-            grazeFoodStore.Pools[0].Age = 12;
 
             grazeFoodStore.AgePasture(10, 30.4);
 
