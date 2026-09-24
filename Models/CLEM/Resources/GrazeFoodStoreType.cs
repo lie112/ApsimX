@@ -30,10 +30,6 @@ namespace Models.CLEM.Resources
     [ModelAssociations(associatedModels: [typeof(RuminantParametersGrazing)], associationStyles: [ModelAssociationStyle.DescendentOfRuminantType])]
     public class GrazeFoodStoreType : CLEMResourceTypeBase, IResourceWithTransactionType, IResourceType, IFeed, IValidatableObject, IGrazeFoodStoreType
     {
-        // Add constants
-        private const double PendingEpsilon = 1e-8;
-        private const double PoolMassEpsilon = 1e-6;
-
         [Link(IsOptional = true)]
         private readonly CLEMEvents events = null;
         private IPastureManager manager;
@@ -44,6 +40,11 @@ namespace Models.CLEM.Resources
         // Cache over total biomass for sward quality reporting.
         private double weightedSumDMD; // sum(pool.Amount * pool.DMD)
         private double weightedSumN;   // sum(pool.Amount * pool.N)
+
+        /// <summary>
+        /// Smallest amount of pool mass or pending permitted.
+        /// </summary>
+        public const double PoolMassEpsilon = 1e-6;
 
         /// <inheritdoc/>
         [Description("Units (nominal)")]
@@ -816,7 +817,7 @@ namespace Models.CLEM.Resources
             double detached = 0;
             foreach (var pool in Pools)
             {
-                if (pool.AmountPending > PendingEpsilon)
+                if (pool.AmountPending > PoolMassEpsilon)
                 {
                     throw new ApsimXException(this, "Core logic error: Cannot detach pasture as there is pending growth or grazing. Check timers of managing activities to ensure they run after detachment or pending resources are handled before detachment");
                 }
@@ -1104,7 +1105,7 @@ namespace Models.CLEM.Resources
             bool needsPoolCleanup = false;
             foreach (var pool in Pools)
             {
-                if (pool.AmountPending > 0 && pool.AmountPending <= PendingEpsilon)
+                if (pool.AmountPending > 0 && pool.AmountPending <= PoolMassEpsilon)
                 {
                     pool.ReducePending(pool.AmountPending);
                 }
@@ -1117,7 +1118,7 @@ namespace Models.CLEM.Resources
 
             if (needsPoolCleanup)
             {
-                Pools.RemoveAll(a => a.Amount <= PoolMassEpsilon && a.AmountPending <= PendingEpsilon);
+                Pools.RemoveAll(a => a.Amount <= PoolMassEpsilon && a.AmountPending <= PoolMassEpsilon);
             }
 
             // single exact sweep to align base amount and quality aggregates with pool state
